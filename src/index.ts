@@ -1,0 +1,60 @@
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import mongoose from 'mongoose';
+import userRoutes from './modules/user/user.route';
+
+// Load environment variables
+dotenv.config();
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Middleware
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || 'http://localhost:4200',
+  credentials: true
+}));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Database connection
+mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://tasktodouser:tasktodouser@tasktodo.ir517qa.mongodb.net/primecontent')
+  .then(() => {
+    console.log('Connected to MongoDB Atlas');
+  })
+  .catch((error: any) => {
+    console.error('MongoDB connection error:', error);
+  });
+
+// Routes
+app.use('/api/users', userRoutes);
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({
+    data: { status: 'OK', timestamp: new Date().toISOString() },
+    message: 'Server is running successfully'
+  });
+});
+
+// Error handling middleware
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error(err.stack);
+  res.status(500).json({
+    data: null,
+    message: 'Internal server error'
+  });
+});
+
+// 404 handler
+app.use('*', (req, res) => {
+  res.status(404).json({
+    data: null,
+    message: 'Route not found'
+  });
+});
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+}); 
