@@ -23,6 +23,7 @@ export const authorization = (req: AuthRequest, res: Response, next: NextFunctio
     
     next();
   } catch (error) {
+    console.log("The error in middleware is : ", error)
     return res.status(401).json({
       data: null,
       message: 'Invalid or expired token'

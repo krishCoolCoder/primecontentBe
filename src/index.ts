@@ -5,6 +5,7 @@ import mongoose from 'mongoose';
 import userRoutes from './modules/user/user.route';
 import tagsRoutes from './modules/tags/tags.route';
 import contentTypeRoutes from './modules/contentType/contentType.route';
+import contentsRoutes from './modules/contents/contents.route';
 
 // Load environment variables
 dotenv.config();
@@ -33,6 +34,7 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://tasktodouser:tasktodo
 app.use('/api/users', userRoutes);
 app.use('/api/tags', tagsRoutes);
 app.use('/api/content-types', contentTypeRoutes);
+app.use('/api/contents', contentsRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
