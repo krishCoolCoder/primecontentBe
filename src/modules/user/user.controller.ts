@@ -7,6 +7,31 @@ interface AuthRequest extends Request {
 
 export class UserController {
   // Create user
+  async registerUser(req: Request, res: Response) {
+    try {
+      const userData: CreateUserData = req.body;
+      const user = await userService.createUser(userData);
+      
+      res.status(201).json({
+        data: {
+          id: user._id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          userName: user.userName,
+          role: user.role,
+          createdAt: user.createdAt
+        },
+        message: 'User created successfully'
+      });
+    } catch (error: any) {
+      res.status(400).json({
+        data: null,
+        message: error.message
+      });
+    }
+  }
+  // Create user
   async createUser(req: Request, res: Response) {
     try {
       const userData: CreateUserData = req.body;
@@ -18,6 +43,7 @@ export class UserController {
           firstName: user.firstName,
           lastName: user.lastName,
           email: user.email,
+          userName: user.userName,
           role: user.role,
           createdAt: user.createdAt
         },
@@ -93,6 +119,7 @@ export class UserController {
           firstName: user.firstName,
           lastName: user.lastName,
           email: user.email,
+          userName: user.userName,
           role: user.role,
           updatedAt: user.updatedAt
         },
@@ -144,6 +171,7 @@ export class UserController {
             firstName: user.firstName,
             lastName: user.lastName,
             email: user.email,
+            userName: user.userName,
             role: user.role
           },
           token

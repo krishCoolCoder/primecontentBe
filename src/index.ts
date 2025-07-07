@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import userRoutes from './modules/user/user.route';
+import tagsRoutes from './modules/tags/tags.route';
 
 // Load environment variables
 dotenv.config();
@@ -29,6 +30,7 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://tasktodouser:tasktodo
 
 // Routes
 app.use('/api/users', userRoutes);
+app.use('/api/tags', tagsRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {

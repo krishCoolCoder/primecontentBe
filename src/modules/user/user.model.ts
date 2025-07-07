@@ -8,6 +8,7 @@ export interface IUser extends Document {
   email: string;
   password: string;
   role: string;
+  userName: string;
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -22,6 +23,11 @@ const userSchema = new Schema<IUser>({
   lastName: {
     type: String,
     required: [true, 'Last name is required'],
+    trim: true
+  },
+  userName : {
+    type: String,
+    required: false,
     trim: true
   },
   email: {
@@ -45,6 +51,14 @@ const userSchema = new Schema<IUser>({
 }, {
   timestamps: true
 });
+
+// Generate the username if no userName is provided : 
+userSchema.pre('save', async function(next){
+  if (!this.userName || this.userName.trim() === '') {
+    this.userName = this.email;
+  }
+  next();
+})
 
 // Hash password before saving
 userSchema.pre('save', async function(next) {

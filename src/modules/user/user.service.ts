@@ -6,6 +6,7 @@ export interface CreateUserData {
   lastName: string;
   email: string;
   password: string;
+  userName?: string;
   role?: string;
 }
 
@@ -14,6 +15,7 @@ export interface UpdateUserData {
   lastName?: string;
   email?: string;
   password?: string;
+  userName?: string;
   role?: string;
 }
 
