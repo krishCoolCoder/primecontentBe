@@ -14,12 +14,22 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:4200',
-  credentials: true
-}));
+// app.use(cors({
+//   origin: process.env.CORS_ORIGIN || 'http://localhost:4200',
+//   credentials: true
+// }));
+
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*'); // or use your frontend URL
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  next();
+});
+
 
 // Database connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://tasktodouser:tasktodouser@tasktodo.ir517qa.mongodb.net/primecontent')
