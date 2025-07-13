@@ -6,6 +6,7 @@ import userRoutes from './modules/user/user.route';
 import tagsRoutes from './modules/tags/tags.route';
 import contentTypeRoutes from './modules/contentType/contentType.route';
 import contentsRoutes from './modules/contents/contents.route';
+import userRolesRoutes from './modules/userRoles/userRoles.route';
 
 // Load environment variables
 dotenv.config();
@@ -45,6 +46,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/tags', tagsRoutes);
 app.use('/api/content-types', contentTypeRoutes);
 app.use('/api/contents', contentsRoutes);
+app.use('/api/userRole', userRolesRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
