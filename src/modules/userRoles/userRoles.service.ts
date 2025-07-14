@@ -1,5 +1,6 @@
 import UserRoles, { IUserRoles } from './userRoles.model';
 import Tags from '../tags/tags.model';
+import userAccessService from '../userAccess/userAccess.service';
 
 export interface CreateUserRolesData {
   roleName: string;
@@ -16,6 +17,36 @@ export interface UpdateUserRolesData {
 }
 
 export class UserRolesService {
+  // Initialize default user roles
+  async initializeDefaultRoles(): Promise<void> {
+    const defaultRoles = [
+      { roleName: 'SuperAdmin' },
+      { roleName: 'Admin' },
+      { roleName: 'User' },
+      { roleName: 'Anonymous' }
+    ];
+
+    for (const roleData of defaultRoles) {
+      const existingRole = await UserRoles.findOne({ roleName: roleData.roleName });
+      if (!existingRole) {
+        console.log(`Creating default role: ${roleData.roleName}`);
+        const role = new UserRoles({
+          roleName: roleData.roleName,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        });
+        const savedRole = await role.save();
+        
+        // Create user access for the new role
+        if (roleData.roleName === 'SuperAdmin') {
+          await userAccessService.createSuperAdminAccess(savedRole._id.toString());
+        } else {
+          await userAccessService.createUserAccess(savedRole._id.toString());
+        }
+      }
+    }
+  }
+
   // Create user role
   async createUserRole(userRoleData: CreateUserRolesData): Promise<IUserRoles> {
     // Check if role name already exists
@@ -40,7 +71,12 @@ export class UserRolesService {
       createdAt: new Date(),
       updatedAt: new Date()
     });
-    return await userRole.save();
+    const savedRole = await userRole.save();
+
+    // Create user access for the new role
+    await userAccessService.createUserAccess(savedRole._id.toString());
+
+    return savedRole;
   }
 
   // Get all user roles

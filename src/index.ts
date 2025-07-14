@@ -7,6 +7,8 @@ import tagsRoutes from './modules/tags/tags.route';
 import contentTypeRoutes from './modules/contentType/contentType.route';
 import contentsRoutes from './modules/contents/contents.route';
 import userRolesRoutes from './modules/userRoles/userRoles.route';
+import userAccessRoutes from './modules/userAccess/userAccess.route';
+import userRolesService from './modules/userRoles/userRoles.service';
 
 // Load environment variables
 dotenv.config();
@@ -15,27 +17,25 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-// app.use(cors({
-//   origin: process.env.CORS_ORIGIN || 'http://localhost:4200',
-//   credentials: true
-// }));
-
-app.use(cors());
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || 'http://localhost:4200',
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*'); // or use your frontend URL
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  next();
-});
-
-
 // Database connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://tasktodouser:tasktodouser@tasktodo.ir517qa.mongodb.net/primecontent')
-  .then(() => {
+  .then(async () => {
     console.log('Connected to MongoDB Atlas');
+    
+    // Initialize default user roles
+    try {
+      await userRolesService.initializeDefaultRoles();
+      console.log('Default user roles initialized');
+    } catch (error) {
+      console.error('Error initializing default roles:', error);
+    }
   })
   .catch((error: any) => {
     console.error('MongoDB connection error:', error);
@@ -47,6 +47,7 @@ app.use('/api/tags', tagsRoutes);
 app.use('/api/content-types', contentTypeRoutes);
 app.use('/api/contents', contentsRoutes);
 app.use('/api/userRole', userRolesRoutes);
+app.use('/api/userAccess', userAccessRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
