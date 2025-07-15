@@ -248,7 +248,7 @@ curl --location --request DELETE 'http://localhost:3000/api/contents/<CONTENT_ID
 
 # 1. Create User Role (with all fields)
 curl --location 'http://localhost:3000/api/userRole' \
---header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODY5ODFjMDIxMmYyZGZlMjU3NzIyZmIiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTI0MDE5MzUsImV4cCI6MTc1MjQ4ODMzNX0.fq_mV17g_VyCXFSUyMygVpBj4vzvOJ1NW7dtdsOW8Wk' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODZjMTJmNTllNDlkM2I5ZjFiZDkyZTAiLCJlbWFpbCI6InNhaWtyaXNobmF0ZWNobm9AZ21haWwuY29tIiwicm9sZSI6InN1cGVyQWRtaW4iLCJpYXQiOjE3NTI2MDY5NDIsImV4cCI6MTc1MjY5MzM0Mn0.tW95lEUgAvNBZE3j9twOjOoVrY2y_UG5nt0MsWVX_lc' \
 --header 'Content-Type: application/json' \
 --data-raw '{
     "roleName": "Content Manager",
@@ -557,3 +557,359 @@ curl --location --request PUT 'http://localhost:3000/api/userAccess/<USER_ACCESS
 #     },
 #     "message": "User access updated successfully"
 # }
+
+# COLLECTION MODULE
+
+# 1. Create Collection
+curl --location 'http://localhost:3000/collection' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODY5ODFjMDIxMmYyZGZlMjU3NzIyZmIiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTI0MDE5MzUsImV4cCI6MTc1MjQ4ODMzNX0.fq_mV17g_VyCXFSUyMygVpBj4vzvOJ1NW7dtdsOW8Wk' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "collectionName": "BlogPosts",
+    "api": "https://api.primecontent.in/collection/BlogPosts?category=technology&mandatory=true",
+    "contentTypeId": "64f8a1b2c3d4e5f6789012ab",
+    "filters": [
+        {
+            "fieldName": "Title",
+            "filterName": "technology",
+            "isMandatory": true
+        },
+        {
+            "fieldName": "Content",
+            "filterName": "content",
+            "isMandatory": false
+        },
+        {
+            "fieldName": "Comments",
+            "filterName": "comments",
+            "isMandatory": false
+        }
+    ]
+}'
+# Response:
+# {
+#     "data": {
+#         "_id": "686c178d1d121ed96372bc9d",
+#         "collectionName": "BlogPosts",
+#         "api": "https://api.primecontent.in/collection/BlogPosts?category=technology&mandatory=true",
+#         "contentTypeId": "64f8a1b2c3d4e5f6789012ab",
+#         "filters": [
+#             {
+#                 "fieldName": "Title",
+#                 "filterName": "technology",
+#                 "isMandatory": true
+#             },
+#             {
+#                 "fieldName": "Content",
+#                 "filterName": "content",
+#                 "isMandatory": false
+#             },
+#             {
+#                 "fieldName": "Comments",
+#                 "filterName": "comments",
+#                 "isMandatory": false
+#             }
+#         ],
+#         "createdAt": "2025-07-07T18:53:01.670Z",
+#         "createdBy": null,
+#         "updatedAt": "2025-07-07T18:53:01.670Z",
+#         "updatedBy": null
+#     },
+#     "message": "Collection created successfully"
+# }
+
+# 2. Get All Collections
+curl --location 'http://localhost:3000/collection' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODY5ODFjMDIxMmYyZGZlMjU3NzIyZmIiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTI0MDE5MzUsImV4cCI6MTc1MjQ4ODMzNX0.fq_mV17g_VyCXFSUyMygVpBj4vzvOJ1NW7dtdsOW8Wk'
+# Response:
+# {
+#     "data": [
+#         {
+#             "_id": "686c178d1d121ed96372bc9d",
+#             "collectionName": "BlogPosts",
+#             "api": "https://api.primecontent.in/collection/BlogPosts?category=technology&mandatory=true",
+#             "contentTypeId": {
+#                 "_id": "64f8a1b2c3d4e5f6789012ab",
+#                 "contentTypeName": "Blog"
+#             },
+#             "filters": [
+#                 {
+#                     "fieldName": "Title",
+#                     "filterName": "technology",
+#                     "isMandatory": true
+#                 },
+#                 {
+#                     "fieldName": "Content",
+#                     "filterName": "content",
+#                     "isMandatory": false
+#                 }
+#             ],
+#             "createdAt": "2025-07-07T18:53:01.670Z",
+#             "createdBy": null,
+#             "updatedAt": "2025-07-07T18:53:01.670Z",
+#             "updatedBy": null
+#         }
+#     ],
+#     "message": "Collections fetched successfully"
+# }
+
+# 3. Get Collection Count
+curl --location 'http://localhost:3000/collection/count' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODY5ODFjMDIxMmYyZGZlMjU3NzIyZmIiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTI0MDE5MzUsImV4cCI6MTc1MjQ4ODMzNX0.fq_mV17g_VyCXFSUyMygVpBj4vzvOJ1NW7dtdsOW8Wk'
+# Response:
+# {
+#     "data": { "count": 1 },
+#     "message": "Collection count fetched successfully"
+# }
+
+# 4. Get Collection by ID
+curl --location 'http://localhost:3000/collection/<COLLECTION_ID>' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODY5ODFjMDIxMmYyZGZlMjU3NzIyZmIiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTI0MDE5MzUsImV4cCI6MTc1MjQ4ODMzNX0.fq_mV17g_VyCXFSUyMygVpBj4vzvOJ1NW7dtdsOW8Wk'
+# Response:
+# {
+#     "data": {
+#         "_id": "686c178d1d121ed96372bc9d",
+#         "collectionName": "BlogPosts",
+#         "api": "https://api.primecontent.in/collection/BlogPosts",
+#         "contentTypeId": {
+#             "_id": "64f8a1b2c3d4e5f6789012ab",
+#             "contentTypeName": "Blog"
+#         },
+#         "filters": [ ... ],
+#         "createdAt": "2025-07-07T18:53:01.670Z",
+#         "createdBy": null,
+#         "updatedAt": "2025-07-07T18:53:01.670Z",
+#         "updatedBy": null
+#     },
+#     "message": "Collection fetched successfully"
+# }
+
+# 5. Update Collection
+curl --location --request PUT 'http://localhost:3000/collection/<COLLECTION_ID>' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODY5ODFjMDIxMmYyZGZlMjU3NzIyZmIiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTI0MDE5MzUsImV4cCI6MTc1MjQ4ODMzNX0.fq_mV17g_VyCXFSUyMygVpBj4vzvOJ1NW7dtdsOW8Wk' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "collectionName": "Updated BlogPosts",
+    "api": "https://api.primecontent.in/collection/BlogPosts?title=technology&content=published",
+    "filters": [
+        {
+            "fieldName": "Title",
+            "filterName": "title",
+            "isMandatory": true
+        },
+        {
+            "fieldName": "Content",
+            "filterName": "content",
+            "isMandatory": false
+        },
+        {
+            "fieldName": "Comments",
+            "filterName": "comments",
+            "isMandatory": false
+        }
+    ]
+}'
+# Response:
+# {
+#     "data": {
+#         "_id": "686c178d1d121ed96372bc9d",
+#         "collectionName": "Updated BlogPosts",
+#         "api": "https://api.primecontent.in/collection/BlogPosts?title=technology&content=published",
+#         "contentTypeId": {
+#             "_id": "64f8a1b2c3d4e5f6789012ab",
+#             "contentTypeName": "Blog"
+#         },
+#         "filters": [ ... ],
+#         "createdAt": "2025-07-07T18:53:01.670Z",
+#         "createdBy": null,
+#         "updatedAt": "2025-07-07T19:00:00.000Z",
+#         "updatedBy": null
+#     },
+#     "message": "Collection updated successfully"
+# }
+
+# 6. Delete Collection
+curl --location --request DELETE 'http://localhost:3000/collection/<COLLECTION_ID>' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODY5ODFjMDIxMmYyZGZlMjU3NzIyZmIiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTI0MDE5MzUsImV4cCI6MTc1MjQ4ODMzNX0.fq_mV17g_VyCXFSUyMygVpBj4vzvOJ1NW7dtdsOW8Wk'
+# Response:
+# {
+#     "data": null,
+#     "message": "Collection deleted successfully"
+# }
+
+# 7. Get Collection Contents by Collection Name (with filtering)
+# Basic usage - returns all contents for the collection's content type
+curl --location 'http://localhost:3000/collection/BlogPosts/contents' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODY5ODFjMDIxMmYyZGZlMjU3NzIyZmIiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTI0MDE5MzUsImV4cCI6MTc1MjQ4ODMzNX0.fq_mV17g_VyCXFSUyMygVpBj4vzvOJ1NW7dtdsOW8Wk'
+# Response:
+# {
+#     "data": [
+#         {
+#             "_id": "687609417a907a5a3c0e3c99",
+#             "contentType": "Blog",
+#             "contentTypeId": {
+#                 "_id": "6872484808f32465649fd06b",
+#                 "contentTypeName": "Blog"
+#             },
+#             "contentFields": [
+#                 {
+#                     "fieldName": "Title",
+#                     "fieldType": "String",
+#                     "fieldValue": "Testing Advanced Technologies"
+#                 },
+#                 {
+#                     "fieldName": "Content",
+#                     "fieldType": "String",
+#                     "fieldValue": "This is a comprehensive guide..."
+#                 }
+#             ],
+#             "createdAt": "2025-07-15T07:54:41.361Z",
+#             "updatedAt": "2025-07-15T07:54:41.361Z"
+#         }
+#     ],
+#     "message": "Contents for collection \"BlogPosts\" fetched successfully"
+# }
+
+# 8. Get Collection Contents with Single Filter (Case-insensitive search)
+# Searches for contents where Title field contains "Testing" (case-insensitive)
+curl --location 'http://localhost:3000/collection/BlogPosts/contents?technology=Testing' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODY5ODFjMDIxMmYyZGZlMjU3NzIyZmIiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTI0MDE5MzUsImV4cCI6MTc1MjQ4ODMzNX0.fq_mV17g_VyCXFSUyMygVpBj4vzvOJ1NW7dtdsOW8Wk'
+# Response:
+# {
+#     "data": [
+#         {
+#             "_id": "687609417a907a5a3c0e3c99",
+#             "contentType": "Blog",
+#             "contentTypeId": {
+#                 "_id": "6872484808f32465649fd06b",
+#                 "contentTypeName": "Blog"
+#             },
+#             "contentFields": [
+#                 {
+#                     "fieldName": "Title",
+#                     "fieldType": "String",
+#                     "fieldValue": "Testing Advanced Technologies"
+#                 }
+#             ],
+#             "createdAt": "2025-07-15T07:54:41.361Z",
+#             "updatedAt": "2025-07-15T07:54:41.361Z"
+#         }
+#     ],
+#     "message": "Contents for collection \"BlogPosts\" fetched successfully"
+# }
+
+# 9. Get Collection Contents with Multiple Filters
+# Searches for contents where Title contains "test" AND Content contains "guide"
+curl --location 'http://localhost:3000/collection/BlogPosts/contents?technology=test&content=guide' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODY5ODFjMDIxMmYyZGZlMjU3NzIyZmIiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTI0MDE5MzUsImV4cCI6MTc1MjQ4ODMzNX0.fq_mV17g_VyCXFSUyMygVpBj4vzvOJ1NW7dtdsOW8Wk'
+# Response:
+# {
+#     "data": [
+#         {
+#             "_id": "687609417a907a5a3c0e3c99",
+#             "contentType": "Blog",
+#             "contentTypeId": {
+#                 "_id": "6872484808f32465649fd06b",
+#                 "contentTypeName": "Blog"
+#             },
+#             "contentFields": [
+#                 {
+#                     "fieldName": "Title",
+#                     "fieldType": "String",
+#                     "fieldValue": "Testing Advanced Technologies"
+#                 },
+#                 {
+#                     "fieldName": "Content",
+#                     "fieldType": "String",
+#                     "fieldValue": "This is a comprehensive guide..."
+#                 }
+#             ],
+#             "createdAt": "2025-07-15T07:54:41.361Z",
+#             "updatedAt": "2025-07-15T07:54:41.361Z"
+#         }
+#     ],
+#     "message": "Contents for collection \"BlogPosts\" fetched successfully"
+# }
+
+# 10. Get Collection Contents with Partial Match
+# Searches for contents where Title contains "hello" (matches "Hello world")
+curl --location 'http://localhost:3000/collection/BlogPosts/contents?technology=hello' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODY5ODFjMDIxMmYyZGZlMjU3NzIyZmIiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTI0MDE5MzUsImV4cCI6MTc1MjQ4ODMzNX0.fq_mV17g_VyCXFSUyMygVpBj4vzvOJ1NW7dtdsOW8Wk'
+# Response:
+# {
+#     "data": [
+#         {
+#             "_id": "6872486308f32465649fd09c",
+#             "contentType": "Blog",
+#             "contentTypeId": {
+#                 "_id": "6872484808f32465649fd06b",
+#                 "contentTypeName": "Blog"
+#             },
+#             "contentFields": [
+#                 {
+#                     "fieldName": "Title",
+#                     "fieldType": "String",
+#                     "fieldValue": "Hello world"
+#                 },
+#                 {
+#                     "fieldName": "Content",
+#                     "fieldType": "String",
+#                     "fieldValue": "This is a test"
+#                 }
+#             ],
+#             "createdAt": "2025-07-12T11:34:59.145Z",
+#             "updatedAt": "2025-07-12T11:34:59.145Z"
+#         }
+#     ],
+#     "message": "Contents for collection \"BlogPosts\" fetched successfully"
+# }
+
+# 11. Error case: Missing mandatory filter
+# If collection has mandatory filter "technology" but it's not provided
+curl --location 'http://localhost:3000/collection/BlogPosts/contents' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODY5ODFjMDIxMmYyZGZlMjU3NzIyZmIiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTI0MDE5MzUsImV4cCI6MTc1MjQ4ODMzNX0.fq_mV17g_VyCXFSUyMygVpBj4vzvOJ1NW7dtdsOW8Wk'
+# Response (if mandatory filter "technology" is missing):
+# {
+#     "data": null,
+#     "message": "Mandatory filter 'technology' is required"
+# }
+
+# 12. Error case: Collection not found
+curl --location 'http://localhost:3000/collection/NonExistentCollection/contents' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODY5ODFjMDIxMmYyZGZlMjU3NzIyZmIiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTI0MDE5MzUsImV4cCI6MTc1MjQ4ODMzNX0.fq_mV17g_VyCXFSUyMygVpBj4vzvOJ1NW7dtdsOW8Wk'
+# Response:
+# {
+#     "data": null,
+#     "message": "Collection not found"
+# }
+
+# IMPORTANT NOTES FOR COLLECTION FILTERING:
+# 1. Filter Parameter Names: Use the "filterName" from your collection configuration as query parameters
+# 2. Field Matching: The system searches in the "fieldName" specified in the filter configuration
+# 3. Case Insensitive: Both field names and values are matched case-insensitively
+# 4. Partial Matching: Search terms can be partial matches (e.g., "test" matches "Testing")
+# 5. Multiple Filters: All provided filters must match (AND operation)
+# 6. Mandatory Filters: If a filter has "isMandatory: true", it must be provided in the query
+# 7. No Filters: If no query parameters are provided, returns all contents for the collection's content type
+
+# FILTER CONFIGURATION EXAMPLE:
+# If your collection has this filter:
+# {
+#   "fieldName": "Title",      // Field to search in
+#   "filterName": "technology", // Query parameter name
+#   "isMandatory": true        // Required parameter
+# }
+# Then use: ?technology=searchterm
+
+# REAL-WORLD EXAMPLE:
+# Collection: BlogPosts
+# Content Type: Blog (with fields: Title, Content, Comments, Likes)
+# Filters:
+# - fieldName: "Title", filterName: "technology", isMandatory: true
+# - fieldName: "Content", filterName: "content", isMandatory: false
+# - fieldName: "Comments", filterName: "comments", isMandatory: false
+#
+# Usage:
+# ?technology=test                    // Search Title containing "test"
+# ?technology=test&content=guide      // Search Title containing "test" AND Content containing "guide"
+# ?technology=hello&comments=good     // Search Title containing "hello" AND Comments containing "good"

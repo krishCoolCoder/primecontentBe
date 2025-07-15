@@ -8,6 +8,7 @@ import contentTypeRoutes from './modules/contentType/contentType.route';
 import contentsRoutes from './modules/contents/contents.route';
 import userRolesRoutes from './modules/userRoles/userRoles.route';
 import userAccessRoutes from './modules/userAccess/userAccess.route';
+import collectionRoutes from './modules/collection/collection.route';
 import userRolesService from './modules/userRoles/userRoles.service';
 
 // Load environment variables
@@ -48,6 +49,7 @@ app.use('/api/content-types', contentTypeRoutes);
 app.use('/api/contents', contentsRoutes);
 app.use('/api/userRole', userRolesRoutes);
 app.use('/api/userAccess', userAccessRoutes);
+app.use('/collection', collectionRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
