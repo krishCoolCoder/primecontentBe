@@ -1,5 +1,6 @@
 import ContentType, { IContentType, IContentTypeField } from './contentType.model';
 import Tags from '../tags/tags.model';
+import Contents from '../contents/contents.model';
 
 export interface CreateContentTypeData {
   tags?: string;
@@ -102,6 +103,20 @@ export class ContentTypeService {
     return await ContentType.find({ tags: tagName })
       .populate('createdBy', 'firstName lastName email')
       .populate('updatedBy', 'firstName lastName email')
+      .sort({ createdAt: -1 });
+  }
+
+  // Get contents by content type name
+  async getContentsByContentTypeName(contentTypeName: string): Promise<any[]> {
+    // First find the content type by name
+    const contentType = await ContentType.findOne({ contentTypeName });
+    if (!contentType) {
+      throw new Error('Content type not found');
+    }
+
+    // Then find all contents for this content type
+    return await Contents.find({ contentTypeId: contentType._id })
+      .populate('contentTypeId', 'contentTypeName tags')
       .sort({ createdAt: -1 });
   }
 }

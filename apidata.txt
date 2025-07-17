@@ -150,6 +150,50 @@ curl --location --request DELETE 'http://localhost:3000/api/content-types/<CONTE
 #     "message": "Content type deleted successfully"
 # }
 
+# 9. Get Contents by Content Type Name
+curl --location 'http://localhost:3000/api/content-types/list/<CONTENT_TYPE_NAME>' \
+--header 'Authorization: Bearer <TOKEN>'
+# Example: Get all contents for "Blog" content type
+# curl --location 'http://localhost:3000/api/content-types/list/Blog' \
+# --header 'Authorization: Bearer <TOKEN>'
+# Response:
+# {
+#     "data": [
+#         {
+#             "_id": "687609417a907a5a3c0e3c99",
+#             "contentType": "Blog",
+#             "contentTypeId": {
+#                 "_id": "6872484808f32465649fd06b",
+#                 "contentTypeName": "Blog"
+#             },
+#             "contentFields": [
+#                 {
+#                     "fieldName": "Title",
+#                     "fieldType": "String",
+#                     "fieldValue": "Testing Advanced Technologies"
+#                 },
+#                 {
+#                     "fieldName": "Content",
+#                     "fieldType": "String",
+#                     "fieldValue": "This is a comprehensive guide..."
+#                 }
+#             ],
+#             "createdAt": "2025-07-15T07:54:41.361Z",
+#             "updatedAt": "2025-07-15T07:54:41.361Z"
+#         }
+#     ],
+#     "message": "Contents for content type \"Blog\" fetched successfully"
+# }
+
+# Error case: Content type not found
+# curl --location 'http://localhost:3000/api/content-types/list/NonExistentType' \
+# --header 'Authorization: Bearer <TOKEN>'
+# Response:
+# {
+#     "data": null,
+#     "message": "Content type not found"
+# }
+
 # CONTENTS MODULE
 
 # 1. Create Content
@@ -592,7 +636,10 @@ curl --location 'http://localhost:3000/collection' \
 #         "_id": "686c178d1d121ed96372bc9d",
 #         "collectionName": "BlogPosts",
 #         "api": "https://api.primecontent.in/collection/BlogPosts?category=technology&mandatory=true",
-#         "contentTypeId": "64f8a1b2c3d4e5f6789012ab",
+#         "contentTypeId": {
+#             "_id": "64f8a1b2c3d4e5f6789012ab",
+#             "contentTypeName": "Blog"
+#         },
 #         "filters": [
 #             {
 #                 "fieldName": "Title",
@@ -602,11 +649,6 @@ curl --location 'http://localhost:3000/collection' \
 #             {
 #                 "fieldName": "Content",
 #                 "filterName": "content",
-#                 "isMandatory": false
-#             },
-#             {
-#                 "fieldName": "Comments",
-#                 "filterName": "comments",
 #                 "isMandatory": false
 #             }
 #         ],

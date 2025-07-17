@@ -8,6 +8,7 @@ const router = Router();
 router.post('/', authorization, contentTypeController.createContentType);
 router.get('/', authorization, contentTypeController.getAllContentTypes);
 router.get('/count', authorization, contentTypeController.getContentTypesCount);
+router.get('/list/:contentTypeName', authorization, contentTypeController.getContentsByContentTypeName);
 router.get('/tag/:tagName', authorization, contentTypeController.getContentTypesByTag);
 router.get('/:id', authorization, contentTypeController.getContentTypeById);
 router.put('/:id', authorization, contentTypeController.updateContentType);

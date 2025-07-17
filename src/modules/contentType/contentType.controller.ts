@@ -185,6 +185,24 @@ export class ContentTypeController {
       });
     }
   }
+
+  // Get contents by content type name
+  async getContentsByContentTypeName(req: Request, res: Response) {
+    try {
+      const { contentTypeName } = req.params;
+      const contents = await contentTypeService.getContentsByContentTypeName(contentTypeName);
+      
+      res.status(200).json({
+        data: contents,
+        message: `Contents for content type "${contentTypeName}" fetched successfully`
+      });
+    } catch (error: any) {
+      res.status(404).json({
+        data: null,
+        message: error.message
+      });
+    }
+  }
 }
 
 export default new ContentTypeController(); 
