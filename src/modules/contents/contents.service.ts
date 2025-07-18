@@ -11,6 +11,12 @@ export interface UpdateContentsData {
   contentFields: IContentField[];
 }
 
+export interface ContentsFilterOptions {
+  contentType?: string;
+  fromDate?: string;
+  toDate?: string;
+}
+
 export class ContentsService {
   // Create content
   async createContent(contentData: CreateContentsData): Promise<IContents> {
@@ -36,9 +42,32 @@ export class ContentsService {
     return await content.save();
   }
 
-  // Get all contents
-  async getAllContents(): Promise<IContents[]> {
-    return await Contents.find()
+  // Get all contents with optional filters
+  async getAllContents(filters?: ContentsFilterOptions): Promise<IContents[]> {
+    const query: any = {};
+    
+    // Build the query based on filters
+    if (filters) {
+      // Content type filter
+      if (filters.contentType) {
+        query.contentType = { $regex: filters.contentType, $options: 'i' };
+      }
+
+      // Date range filters
+      if (filters.fromDate || filters.toDate) {
+        query.createdAt = {};
+        
+        if (filters.fromDate) {
+          query.createdAt.$gte = new Date(filters.fromDate);
+        }
+        
+        if (filters.toDate) {
+          query.createdAt.$lte = new Date(filters.toDate);
+        }
+      }
+    }
+
+    return await Contents.find(query)
       .populate('contentTypeId', 'contentTypeName tags')
       .sort({ createdAt: -1 });
   }

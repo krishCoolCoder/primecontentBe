@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import tagsService, { CreateTagsData, UpdateTagsData } from './tags.service';
+import tagsService, { CreateTagsData, UpdateTagsData, TagsFilterOptions } from './tags.service';
 
 export class TagsController {
   // Create tag
@@ -28,7 +28,22 @@ export class TagsController {
   // Get all tags
   async getAllTags(req: Request, res: Response) {
     try {
-      const tags = await tagsService.getAllTags();
+      // Extract query parameters
+      const filters: TagsFilterOptions = {};
+      
+      if (req.query.tagName) {
+        filters.tagName = req.query.tagName as string;
+      }
+      
+      if (req.query.fromDate) {
+        filters.fromDate = req.query.fromDate as string;
+      }
+      
+      if (req.query.toDate) {
+        filters.toDate = req.query.toDate as string;
+      }
+
+      const tags = await tagsService.getAllTags(Object.keys(filters).length > 0 ? filters : undefined);
       
       res.status(200).json({
         data: tags,

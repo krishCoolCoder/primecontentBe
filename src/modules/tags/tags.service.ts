@@ -10,6 +10,12 @@ export interface UpdateTagsData {
   description?: string;
 }
 
+export interface TagsFilterOptions {
+  tagName?: string;
+  fromDate?: string;
+  toDate?: string;
+}
+
 export class TagsService {
   // Create tag
   async createTag(tagData: CreateTagsData): Promise<ITags> {
@@ -22,9 +28,32 @@ export class TagsService {
     return await tag.save();
   }
 
-  // Get all tags
-  async getAllTags(): Promise<ITags[]> {
-    return await Tags.find().sort({ createdAt: -1 });
+  // Get all tags with optional filters
+  async getAllTags(filters?: TagsFilterOptions): Promise<ITags[]> {
+    const query: any = {};
+    
+    // Build the query based on filters
+    if (filters) {
+      // Tag name filter
+      if (filters.tagName) {
+        query.tagName = { $regex: filters.tagName, $options: 'i' };
+      }
+
+      // Date range filters
+      if (filters.fromDate || filters.toDate) {
+        query.createdAt = {};
+        
+        if (filters.fromDate) {
+          query.createdAt.$gte = new Date(filters.fromDate);
+        }
+        
+        if (filters.toDate) {
+          query.createdAt.$lte = new Date(filters.toDate);
+        }
+      }
+    }
+
+    return await Tags.find(query).sort({ createdAt: -1 });
   }
 
   // Get tag by ID

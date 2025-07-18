@@ -24,6 +24,14 @@ export interface LoginData {
   password: string;
 }
 
+export interface UserFilterOptions {
+  userRole?: string;
+  userName?: string;
+  email?: string;
+  fromDate?: string;
+  toDate?: string;
+}
+
 export class UserService {
   // Create user
   async createUser(userData: CreateUserData): Promise<IUser> {
@@ -36,9 +44,45 @@ export class UserService {
     return await user.save();
   }
 
-  // Get all users
-  async getAllUsers(): Promise<IUser[]> {
-    return await User.find({}, '-password');
+  // Get all users with optional filters
+  async getAllUsers(filters?: UserFilterOptions): Promise<IUser[]> {
+    const query: any = {};
+    
+    // Build the query based on filters
+    if (filters) {
+      // User role filter
+      if (filters.userRole) {
+        query.role = { $regex: filters.userRole, $options: 'i' };
+      }
+
+      // User name filter - search in firstName and lastName
+      if (filters.userName) {
+        query.$or = [
+          { firstName: { $regex: filters.userName, $options: 'i' } },
+          { lastName: { $regex: filters.userName, $options: 'i' } }
+        ];
+      }
+
+      // Email filter
+      if (filters.email) {
+        query.email = { $regex: filters.email, $options: 'i' };
+      }
+
+      // Date range filters
+      if (filters.fromDate || filters.toDate) {
+        query.createdAt = {};
+        
+        if (filters.fromDate) {
+          query.createdAt.$gte = new Date(filters.fromDate);
+        }
+        
+        if (filters.toDate) {
+          query.createdAt.$lte = new Date(filters.toDate);
+        }
+      }
+    }
+
+    return await User.find(query, '-password').sort({ createdAt: -1 });
   }
 
   // Get user by ID

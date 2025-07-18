@@ -16,6 +16,13 @@ export interface UpdateUserRolesData {
   inHeritedRoleRef?: string; // ObjectId as string
 }
 
+export interface UserRolesFilterOptions {
+  roleName?: string;
+  fromDate?: string;
+  toDate?: string;
+  tags?: string;
+}
+
 export class UserRolesService {
   // Initialize default user roles
   async initializeDefaultRoles(): Promise<void> {
@@ -80,8 +87,36 @@ export class UserRolesService {
   }
 
   // Get all user roles
-  async getAllUserRoles(): Promise<IUserRoles[]> {
-    return await UserRoles.find()
+  async getAllUserRoles(filters?: UserRolesFilterOptions): Promise<IUserRoles[]> {
+    const query: any = {};
+    
+    // Build the query based on filters
+    if (filters) {
+      // Role name filter (case-insensitive)
+      if (filters.roleName) {
+        query.roleName = { $regex: filters.roleName, $options: 'i' };
+      }
+
+      // Date range filters
+      if (filters.fromDate || filters.toDate) {
+        query.createdAt = {};
+        
+        if (filters.fromDate) {
+          query.createdAt.$gte = new Date(filters.fromDate);
+        }
+        
+        if (filters.toDate) {
+          query.createdAt.$lte = new Date(filters.toDate);
+        }
+      }
+
+      // Tags filter
+      if (filters.tags) {
+        query.tags = filters.tags;
+      }
+    }
+
+    return await UserRoles.find(query)
       .populate('tags', 'tagName description')
       .populate('createdBy', 'firstName lastName email')
       .populate('updatedBy', 'firstName lastName email')

@@ -1,5 +1,15 @@
 import { Request, Response } from 'express';
-import collectionService, { CreateCollectionData, UpdateCollectionData } from './collection.service';
+import collectionService, { 
+  CreateCollectionData, 
+  UpdateCollectionData
+} from './collection.service';
+
+// Define filter options locally
+interface CollectionFilterOptions {
+  collectionName?: string;
+  fromDate?: string;
+  toDate?: string;
+}
 
 export class CollectionController {
   // Create collection
@@ -23,7 +33,22 @@ export class CollectionController {
   // Get all collections
   async getAllCollections(req: Request, res: Response) {
     try {
-      const collections = await collectionService.getAllCollections();
+      // Extract query parameters
+      const filters: CollectionFilterOptions = {};
+      
+      if (req.query.collectionName) {
+        filters.collectionName = req.query.collectionName as string;
+      }
+      
+      if (req.query.fromDate) {
+        filters.fromDate = req.query.fromDate as string;
+      }
+      
+      if (req.query.toDate) {
+        filters.toDate = req.query.toDate as string;
+      }
+
+      const collections = await collectionService.getAllCollections(Object.keys(filters).length > 0 ? filters : undefined);
       
       res.status(200).json({
         data: collections,

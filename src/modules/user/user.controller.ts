@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import userService, { CreateUserData, UpdateUserData, LoginData } from './user.service';
+import userService, { CreateUserData, UpdateUserData, LoginData, UserFilterOptions } from './user.service';
 
 interface AuthRequest extends Request {
   user?: any;
@@ -60,7 +60,30 @@ export class UserController {
   // Get all users
   async getAllUsers(req: Request, res: Response) {
     try {
-      const users = await userService.getAllUsers();
+      // Extract query parameters
+      const filters: UserFilterOptions = {};
+      
+      if (req.query.userRole) {
+        filters.userRole = req.query.userRole as string;
+      }
+      
+      if (req.query.userName) {
+        filters.userName = req.query.userName as string;
+      }
+      
+      if (req.query.email) {
+        filters.email = req.query.email as string;
+      }
+      
+      if (req.query.fromDate) {
+        filters.fromDate = req.query.fromDate as string;
+      }
+      
+      if (req.query.toDate) {
+        filters.toDate = req.query.toDate as string;
+      }
+
+      const users = await userService.getAllUsers(Object.keys(filters).length > 0 ? filters : undefined);
       
       res.status(200).json({
         data: users,

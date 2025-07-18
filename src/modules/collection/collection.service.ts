@@ -16,6 +16,12 @@ export interface UpdateCollectionData {
   filters?: IFilter[];
 }
 
+export interface CollectionFilterOptions {
+  collectionName?: string;
+  fromDate?: string;
+  toDate?: string;
+}
+
 export class CollectionService {
   // Create collection
   async createCollection(collectionData: CreateCollectionData): Promise<ICollection> {
@@ -44,8 +50,31 @@ export class CollectionService {
   }
 
   // Get all collections
-  async getAllCollections(): Promise<ICollection[]> {
-    return await Collection.find()
+  async getAllCollections(filters?: CollectionFilterOptions): Promise<ICollection[]> {
+    const query: any = {};
+    
+    // Build the query based on filters
+    if (filters) {
+      // Collection name filter
+      if (filters.collectionName) {
+        query.collectionName = { $regex: filters.collectionName, $options: 'i' };
+      }
+
+      // Date range filters
+      if (filters.fromDate || filters.toDate) {
+        query.createdAt = {};
+        
+        if (filters.fromDate) {
+          query.createdAt.$gte = new Date(filters.fromDate);
+        }
+        
+        if (filters.toDate) {
+          query.createdAt.$lte = new Date(filters.toDate);
+        }
+      }
+    }
+
+    return await Collection.find(query)
       .populate('contentTypeId', 'contentTypeName')
       .populate({ path: 'createdBy', select: 'firstName lastName email' })
       .populate({ path: 'updatedBy', select: 'firstName lastName email' })
@@ -124,6 +153,9 @@ export class CollectionService {
       throw new Error('Collection not found');
     }
 
+    console.log('Collection filters:', JSON.stringify(collection.filters, null, 2));
+    console.log('Query parameters:', queryParams);
+
     // Validate mandatory filters
     const mandatoryFilters = collection.filters.filter(filter => filter.isMandatory);
     for (const mandatoryFilter of mandatoryFilters) {
@@ -132,23 +164,10 @@ export class CollectionService {
       }
     }
 
-    // Build query for contents
-    const contentsQuery: any = {
-      contentTypeId: collection.contentTypeId._id
-    };
-
-    // Apply filters
-    for (const filter of collection.filters) {
-      const filterValue = queryParams[filter.filterName];
-      if (filterValue) {
-        // Find the field in contentFields array
-        contentsQuery[`contentFields.fieldName`] = filter.fieldName;
-        contentsQuery[`contentFields.fieldValue`] = filterValue;
-      }
-    }
-
     // If we have filter criteria, we need to use aggregation
-    if (collection.filters.length > 0 && Object.keys(queryParams).length > 0) {
+    const hasFilterParams = collection.filters.some(filter => queryParams[filter.filterName]);
+    
+    if (collection.filters.length > 0 && hasFilterParams) {
       const matchConditions: any[] = [
         { contentTypeId: collection.contentTypeId._id }
       ];
@@ -157,16 +176,19 @@ export class CollectionService {
       for (const filter of collection.filters) {
         const filterValue = queryParams[filter.filterName];
         if (filterValue) {
+          console.log(`Applying filter: ${filter.filterName} = ${filterValue} on field: ${filter.fieldName}`);
           matchConditions.push({
             contentFields: {
               $elemMatch: {
-                fieldName: filter.fieldName,
-                fieldValue: filterValue
+                fieldName: { $regex: `^${filter.fieldName}$`, $options: 'i' },
+                fieldValue: { $regex: filterValue, $options: 'i' }
               }
             }
           });
         }
       }
+
+      console.log('Match conditions:', JSON.stringify(matchConditions, null, 2));
 
       const contents = await Contents.aggregate([
         {
@@ -187,6 +209,7 @@ export class CollectionService {
         }
       ]);
 
+      console.log(`Found ${contents.length} contents after filtering`);
       return contents;
     } else {
       // No filters applied, return all contents for this content type

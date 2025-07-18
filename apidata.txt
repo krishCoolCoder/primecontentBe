@@ -1,3 +1,133 @@
+# USERS MODULE
+
+# 1. Register User
+curl --location 'http://localhost:3000/api/users/register' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john@example.com",
+    "password": "password123",
+    "userName": "johndoe",
+    "role": "user"
+}'
+# Response:
+# {
+#     "data": {
+#         "id": "686c178d1d121ed96372bc9d",
+#         "firstName": "John",
+#         "lastName": "Doe",
+#         "email": "john@example.com",
+#         "userName": "johndoe",
+#         "role": "user",
+#         "createdAt": "2025-07-07T18:53:01.670Z"
+#     },
+#     "message": "User created successfully"
+# }
+
+# 2. Login User
+curl --location 'http://localhost:3000/api/users/login' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "email": "john@example.com",
+    "password": "password123"
+}'
+# Response:
+# {
+#     "data": {
+#         "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+#         "user": {
+#             "id": "686c178d1d121ed96372bc9d",
+#             "firstName": "John",
+#             "lastName": "Doe",
+#             "email": "john@example.com",
+#             "userName": "johndoe",
+#             "role": "user"
+#         }
+#     },
+#     "message": "Login successful"
+# }
+
+# 3. Get All Users
+curl --location 'http://localhost:3000/api/users' \
+--header 'Authorization: Bearer <TOKEN>'
+# Response:
+# {
+#     "data": [ ... ],
+#     "message": "Users fetched successfully"
+# }
+
+# 3a. Get All Users with User Role Filter
+curl --location 'http://localhost:3000/api/users?userRole=admin' \
+--header 'Authorization: Bearer <TOKEN>'
+# Filters users by role (case-insensitive)
+
+# 3b. Get All Users with User Name Filter
+curl --location 'http://localhost:3000/api/users?userName=john' \
+--header 'Authorization: Bearer <TOKEN>'
+# Filters users by first name or last name (case-insensitive)
+
+# 3c. Get All Users with Email Filter
+curl --location 'http://localhost:3000/api/users?email=example.com' \
+--header 'Authorization: Bearer <TOKEN>'
+# Filters users by email (case-insensitive)
+
+# 3d. Get All Users with Date Range Filter
+curl --location 'http://localhost:3000/api/users?fromDate=2025-01-01&toDate=2025-12-31' \
+--header 'Authorization: Bearer <TOKEN>'
+# Returns users created between the specified dates
+
+# 3e. Get All Users with From Date Filter
+curl --location 'http://localhost:3000/api/users?fromDate=2025-01-01' \
+--header 'Authorization: Bearer <TOKEN>'
+# Returns users created after the specified date
+
+# 3f. Get All Users with To Date Filter
+curl --location 'http://localhost:3000/api/users?toDate=2025-12-31' \
+--header 'Authorization: Bearer <TOKEN>'
+# Returns users created up to the specified date
+
+# 3g. Get All Users with Multiple Filters
+curl --location 'http://localhost:3000/api/users?userRole=admin&userName=john&fromDate=2025-01-01' \
+--header 'Authorization: Bearer <TOKEN>'
+# Combines multiple filters: role contains "admin", username contains "john", and created after 2025-01-01
+
+# Note: All filters are optional and can be combined. If no filters are provided, all users are returned.
+
+# 4. Get User by ID
+curl --location 'http://localhost:3000/api/users/<USER_ID>' \
+--header 'Authorization: Bearer <TOKEN>'
+# Response:
+# {
+#     "data": { ... },
+#     "message": "User fetched successfully"
+# }
+
+# 5. Update User
+curl --location --request PUT 'http://localhost:3000/api/users/<USER_ID>' \
+--header 'Authorization: Bearer <TOKEN>' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "firstName": "John Updated",
+    "lastName": "Doe Updated",
+    "userName": "johnupdated",
+    "role": "admin"
+}'
+# Response:
+# {
+#     "data": { ... },
+#     "message": "User updated successfully"
+# }
+
+# 6. Delete User
+curl --location --request DELETE 'http://localhost:3000/api/users/<USER_ID>' \
+--header 'Authorization: Bearer <TOKEN>'
+# Response:
+# {
+#     "data": null,
+#     "message": "User deleted successfully"
+# }
+
 # TAGS MODULE
 
 # 1. Create Tag
@@ -27,6 +157,33 @@ curl --location 'http://localhost:3000/api/tags' \
 #     "data": [ ... ],
 #     "message": "Tags fetched successfully"
 # }
+
+# 2a. Get All Tags with Tag Name Filter
+curl --location 'http://localhost:3000/api/tags?tagName=Technology' \
+--header 'Authorization: Bearer <TOKEN>'
+# Filters tags by name (case-insensitive)
+
+# 2b. Get All Tags with Date Range Filter
+curl --location 'http://localhost:3000/api/tags?fromDate=2025-01-01&toDate=2025-12-31' \
+--header 'Authorization: Bearer <TOKEN>'
+# Returns tags created between the specified dates
+
+# 2c. Get All Tags with From Date Filter
+curl --location 'http://localhost:3000/api/tags?fromDate=2025-01-01' \
+--header 'Authorization: Bearer <TOKEN>'
+# Returns tags created after the specified date
+
+# 2d. Get All Tags with To Date Filter
+curl --location 'http://localhost:3000/api/tags?toDate=2025-12-31' \
+--header 'Authorization: Bearer <TOKEN>'
+# Returns tags created up to the specified date
+
+# 2e. Get All Tags with Multiple Filters
+curl --location 'http://localhost:3000/api/tags?tagName=Tech&fromDate=2025-01-01' \
+--header 'Authorization: Bearer <TOKEN>'
+# Combines multiple filters: tag name contains "Tech" and created after 2025-01-01
+
+# Note: All filters are optional and can be combined. If no filters are provided, all tags are returned.
 
 # 3. Get Tags Count
 curl --location 'http://localhost:3000/api/tags/count' \
@@ -99,6 +256,33 @@ curl --location 'http://localhost:3000/api/content-types' \
 #     "data": [ ... ],
 #     "message": "Content types fetched successfully"
 # }
+
+# 2a. Get All Content Types with Content Type Filter
+curl --location 'http://localhost:3000/api/content-types?contentType=Blog' \
+--header 'Authorization: Bearer <TOKEN>'
+# Filters content types by name (case-insensitive)
+
+# 2b. Get All Content Types with Date Range Filter
+curl --location 'http://localhost:3000/api/content-types?fromDate=2025-01-01&toDate=2025-12-31' \
+--header 'Authorization: Bearer <TOKEN>'
+# Returns content types created between the specified dates
+
+# 2c. Get All Content Types with From Date Filter
+curl --location 'http://localhost:3000/api/content-types?fromDate=2025-01-01' \
+--header 'Authorization: Bearer <TOKEN>'
+# Returns content types created after the specified date
+
+# 2d. Get All Content Types with To Date Filter
+curl --location 'http://localhost:3000/api/content-types?toDate=2025-12-31' \
+--header 'Authorization: Bearer <TOKEN>'
+# Returns content types created up to the specified date
+
+# 2e. Get All Content Types with Multiple Filters
+curl --location 'http://localhost:3000/api/content-types?contentType=Blog&fromDate=2025-01-01' \
+--header 'Authorization: Bearer <TOKEN>'
+# Combines multiple filters: content type name contains "Blog" and created after 2025-01-01
+
+# Note: All filters are optional and can be combined. If no filters are provided, all content types are returned.
 
 # 3. Get Content Types Count
 curl --location 'http://localhost:3000/api/content-types/count' \
@@ -224,6 +408,33 @@ curl --location 'http://localhost:3000/api/contents' \
 #     "data": [ ... ],
 #     "message": "Contents fetched successfully"
 # }
+
+# 2a. Get All Contents with Content Type Filter
+curl --location 'http://localhost:3000/api/contents?contentType=Blog' \
+--header 'Authorization: Bearer <TOKEN>'
+# Filters contents by content type name (case-insensitive)
+
+# 2b. Get All Contents with Date Range Filter
+curl --location 'http://localhost:3000/api/contents?fromDate=2025-01-01&toDate=2025-12-31' \
+--header 'Authorization: Bearer <TOKEN>'
+# Returns contents created between the specified dates
+
+# 2c. Get All Contents with From Date Filter
+curl --location 'http://localhost:3000/api/contents?fromDate=2025-01-01' \
+--header 'Authorization: Bearer <TOKEN>'
+# Returns contents created after the specified date
+
+# 2d. Get All Contents with To Date Filter
+curl --location 'http://localhost:3000/api/contents?toDate=2025-12-31' \
+--header 'Authorization: Bearer <TOKEN>'
+# Returns contents created up to the specified date
+
+# 2e. Get All Contents with Multiple Filters
+curl --location 'http://localhost:3000/api/contents?contentType=Blog&fromDate=2025-01-01' \
+--header 'Authorization: Bearer <TOKEN>'
+# Combines multiple filters: content type is "Blog" and created after 2025-01-01
+
+# Note: All filters are optional and can be combined. If no filters are provided, all contents are returned.
 
 # 3. Get Contents Count
 curl --location 'http://localhost:3000/api/contents/count' \
@@ -363,6 +574,38 @@ curl --location 'http://localhost:3000/api/userRole' \
 #     ],
 #     "message": "User roles fetched successfully"
 # }
+
+# 2a. Get All User Roles with Role Name Filter
+curl --location 'http://localhost:3000/api/userRole?roleName=admin' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODY5ODFjMDIxMmYyZGZlMjU3NzIyZmIiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTI0MDE5MzUsImV4cCI6MTc1MjQ4ODMzNX0.fq_mV17g_VyCXFSUyMygVpBj4vzvOJ1NW7dtdsOW8Wk'
+# Filters user roles by role name (case-insensitive)
+
+# 2b. Get All User Roles with Tags Filter
+curl --location 'http://localhost:3000/api/userRole?tags=<TAG_ID>' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODY5ODFjMDIxMmYyZGZlMjU3NzIyZmIiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTI0MDE5MzUsImV4cCI6MTc1MjQ4ODMzNX0.fq_mV17g_VyCXFSUyMygVpBj4vzvOJ1NW7dtdsOW8Wk'
+# Filters user roles by tag ID
+
+# 2c. Get All User Roles with Date Range Filter
+curl --location 'http://localhost:3000/api/userRole?fromDate=2025-01-01&toDate=2025-12-31' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODY5ODFjMDIxMmYyZGZlMjU3NzIyZmIiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTI0MDE5MzUsImV4cCI6MTc1MjQ4ODMzNX0.fq_mV17g_VyCXFSUyMygVpBj4vzvOJ1NW7dtdsOW8Wk'
+# Returns user roles created between the specified dates
+
+# 2d. Get All User Roles with From Date Filter
+curl --location 'http://localhost:3000/api/userRole?fromDate=2025-01-01' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODY5ODFjMDIxMmYyZGZlMjU3NzIyZmIiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTI0MDE5MzUsImV4cCI6MTc1MjQ4ODMzNX0.fq_mV17g_VyCXFSUyMygVpBj4vzvOJ1NW7dtdsOW8Wk'
+# Returns user roles created after the specified date
+
+# 2e. Get All User Roles with To Date Filter
+curl --location 'http://localhost:3000/api/userRole?toDate=2025-12-31' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODY5ODFjMDIxMmYyZGZlMjU3NzIyZmIiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTI0MDE5MzUsImV4cCI6MTc1MjQ4ODMzNX0.fq_mV17g_VyCXFSUyMygVpBj4vzvOJ1NW7dtdsOW8Wk'
+# Returns user roles created up to the specified date
+
+# 2f. Get All User Roles with Multiple Filters
+curl --location 'http://localhost:3000/api/userRole?roleName=admin&fromDate=2025-01-01&tags=<TAG_ID>' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODY5ODFjMDIxMmYyZGZlMjU3NzIyZmIiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTI0MDE5MzUsImV4cCI6MTc1MjQ4ODMzNX0.fq_mV17g_VyCXFSUyMygVpBj4vzvOJ1NW7dtdsOW8Wk'
+# Combines multiple filters: role name contains "admin", created after 2025-01-01, and has specific tag
+
+# Note: All filters are optional and can be combined. If no filters are provided, all user roles are returned.
 
 # 3. Get User Roles Count
 curl --location 'http://localhost:3000/api/userRole/count' \
@@ -694,6 +937,33 @@ curl --location 'http://localhost:3000/collection' \
 #     ],
 #     "message": "Collections fetched successfully"
 # }
+
+# 2a. Get All Collections with Collection Name Filter
+curl --location 'http://localhost:3000/collection?collectionName=BlogPosts' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODY5ODFjMDIxMmYyZGZlMjU3NzIyZmIiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTI0MDE5MzUsImV4cCI6MTc1MjQ4ODMzNX0.fq_mV17g_VyCXFSUyMygVpBj4vzvOJ1NW7dtdsOW8Wk'
+# Filters collections by name (case-insensitive)
+
+# 2b. Get All Collections with Date Range Filter
+curl --location 'http://localhost:3000/collection?fromDate=2025-01-01&toDate=2025-12-31' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODY5ODFjMDIxMmYyZGZlMjU3NzIyZmIiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTI0MDE5MzUsImV4cCI6MTc1MjQ4ODMzNX0.fq_mV17g_VyCXFSUyMygVpBj4vzvOJ1NW7dtdsOW8Wk'
+# Returns collections created between the specified dates
+
+# 2c. Get All Collections with From Date Filter
+curl --location 'http://localhost:3000/collection?fromDate=2025-01-01' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODY5ODFjMDIxMmYyZGZlMjU3NzIyZmIiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTI0MDE5MzUsImV4cCI6MTc1MjQ4ODMzNX0.fq_mV17g_VyCXFSUyMygVpBj4vzvOJ1NW7dtdsOW8Wk'
+# Returns collections created after the specified date
+
+# 2d. Get All Collections with To Date Filter
+curl --location 'http://localhost:3000/collection?toDate=2025-12-31' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODY5ODFjMDIxMmYyZGZlMjU3NzIyZmIiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTI0MDE5MzUsImV4cCI6MTc1MjQ4ODMzNX0.fq_mV17g_VyCXFSUyMygVpBj4vzvOJ1NW7dtdsOW8Wk'
+# Returns collections created up to the specified date
+
+# 2e. Get All Collections with Multiple Filters
+curl --location 'http://localhost:3000/collection?collectionName=Blog&fromDate=2025-01-01' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODY5ODFjMDIxMmYyZGZlMjU3NzIyZmIiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTI0MDE5MzUsImV4cCI6MTc1MjQ4ODMzNX0.fq_mV17g_VyCXFSUyMygVpBj4vzvOJ1NW7dtdsOW8Wk'
+# Combines multiple filters: collection name contains "Blog" and created after 2025-01-01
+
+# Note: All filters are optional and can be combined. If no filters are provided, all collections are returned.
 
 # 3. Get Collection Count
 curl --location 'http://localhost:3000/collection/count' \

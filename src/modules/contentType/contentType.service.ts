@@ -14,6 +14,12 @@ export interface UpdateContentTypeData {
   contentTypeList?: IContentTypeField[];
 }
 
+export interface ContentTypeFilterOptions {
+  contentType?: string;
+  fromDate?: string;
+  toDate?: string;
+}
+
 export class ContentTypeService {
   // Create content type
   async createContentType(contentTypeData: CreateContentTypeData, userId: string): Promise<IContentType> {
@@ -38,9 +44,32 @@ export class ContentTypeService {
     return await contentType.save();
   }
 
-  // Get all content types
-  async getAllContentTypes(): Promise<IContentType[]> {
-    return await ContentType.find()
+  // Get all content types with optional filters
+  async getAllContentTypes(filters?: ContentTypeFilterOptions): Promise<IContentType[]> {
+    const query: any = {};
+    
+    // Build the query based on filters
+    if (filters) {
+      // Content type filter
+      if (filters.contentType) {
+        query.contentTypeName = { $regex: filters.contentType, $options: 'i' };
+      }
+
+      // Date range filters
+      if (filters.fromDate || filters.toDate) {
+        query.createdAt = {};
+        
+        if (filters.fromDate) {
+          query.createdAt.$gte = new Date(filters.fromDate);
+        }
+        
+        if (filters.toDate) {
+          query.createdAt.$lte = new Date(filters.toDate);
+        }
+      }
+    }
+
+    return await ContentType.find(query)
       .populate('createdBy', 'firstName lastName email')
       .populate('updatedBy', 'firstName lastName email')
       .sort({ createdAt: -1 });

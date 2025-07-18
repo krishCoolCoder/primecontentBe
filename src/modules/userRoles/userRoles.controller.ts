@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import userRolesService, { CreateUserRolesData, UpdateUserRolesData } from './userRoles.service';
+import userRolesService, { CreateUserRolesData, UpdateUserRolesData, UserRolesFilterOptions } from './userRoles.service';
 
 export class UserRolesController {
   // Create user role
@@ -33,7 +33,26 @@ export class UserRolesController {
   // Get all user roles
   async getAllUserRoles(req: Request, res: Response) {
     try {
-      const userRoles = await userRolesService.getAllUserRoles();
+      // Extract query parameters
+      const filters: UserRolesFilterOptions = {};
+      
+      if (req.query.roleName) {
+        filters.roleName = req.query.roleName as string;
+      }
+      
+      if (req.query.fromDate) {
+        filters.fromDate = req.query.fromDate as string;
+      }
+      
+      if (req.query.toDate) {
+        filters.toDate = req.query.toDate as string;
+      }
+      
+      if (req.query.tags) {
+        filters.tags = req.query.tags as string;
+      }
+
+      const userRoles = await userRolesService.getAllUserRoles(Object.keys(filters).length > 0 ? filters : undefined);
       
       res.status(200).json({
         data: userRoles,

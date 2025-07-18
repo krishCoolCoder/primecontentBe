@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import contentsService, { CreateContentsData, UpdateContentsData } from './contents.service';
+import contentsService, { CreateContentsData, UpdateContentsData, ContentsFilterOptions } from './contents.service';
 
 export class ContentsController {
   // Create content
@@ -29,7 +29,22 @@ export class ContentsController {
   // Get all contents
   async getAllContents(req: Request, res: Response) {
     try {
-      const contents = await contentsService.getAllContents();
+      // Extract query parameters
+      const filters: ContentsFilterOptions = {};
+      
+      if (req.query.contentType) {
+        filters.contentType = req.query.contentType as string;
+      }
+      
+      if (req.query.fromDate) {
+        filters.fromDate = req.query.fromDate as string;
+      }
+      
+      if (req.query.toDate) {
+        filters.toDate = req.query.toDate as string;
+      }
+
+      const contents = await contentsService.getAllContents(Object.keys(filters).length > 0 ? filters : undefined);
       
       res.status(200).json({
         data: contents,

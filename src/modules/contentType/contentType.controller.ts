@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import contentTypeService, { CreateContentTypeData, UpdateContentTypeData } from './contentType.service';
+import contentTypeService, { CreateContentTypeData, UpdateContentTypeData, ContentTypeFilterOptions } from './contentType.service';
 
 interface AuthRequest extends Request {
   user?: any;
@@ -43,7 +43,22 @@ export class ContentTypeController {
   // Get all content types
   async getAllContentTypes(req: Request, res: Response) {
     try {
-      const contentTypes = await contentTypeService.getAllContentTypes();
+      // Extract query parameters
+      const filters: ContentTypeFilterOptions = {};
+      
+      if (req.query.contentType) {
+        filters.contentType = req.query.contentType as string;
+      }
+      
+      if (req.query.fromDate) {
+        filters.fromDate = req.query.fromDate as string;
+      }
+      
+      if (req.query.toDate) {
+        filters.toDate = req.query.toDate as string;
+      }
+
+      const contentTypes = await contentTypeService.getAllContentTypes(Object.keys(filters).length > 0 ? filters : undefined);
       
       res.status(200).json({
         data: contentTypes,
