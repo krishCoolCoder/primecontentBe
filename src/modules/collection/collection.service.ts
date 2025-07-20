@@ -1,6 +1,8 @@
 import Collection, { ICollection, IFilter } from './collection.model';
 import ContentType from '../contentType/contentType.model';
 import Contents from '../contents/contents.model';
+import { getAccessFilter } from '../../utils/accessFilter';
+import { Request } from 'express';
 
 export interface CreateCollectionData {
   collectionName: string;
@@ -50,8 +52,14 @@ export class CollectionService {
   }
 
   // Get all collections
-  async getAllCollections(filters?: CollectionFilterOptions): Promise<ICollection[]> {
+  async getAllCollections(filters?: CollectionFilterOptions, req?: Request): Promise<ICollection[]> {
     const query: any = {};
+    
+    // Apply access-based filter first
+    if (req) {
+      const accessFilter = getAccessFilter(req, 'collections');
+      Object.assign(query, accessFilter);
+    }
     
     // Build the query based on filters
     if (filters) {
@@ -144,9 +152,17 @@ export class CollectionService {
   }
 
   // Get collection contents with filtering
-  async getCollectionContents(collectionName: string, queryParams: any): Promise<any> {
-    // Get collection by name
-    const collection = await Collection.findOne({ collectionName })
+  async getCollectionContents(collectionName: string, queryParams: any, req?: Request): Promise<any> {
+    // Get collection by name with access filter
+    const collectionQuery: any = { collectionName };
+    
+    // Apply access-based filter for collection lookup
+    if (req) {
+      const accessFilter = getAccessFilter(req, 'collections');
+      Object.assign(collectionQuery, accessFilter);
+    }
+    
+    const collection = await Collection.findOne(collectionQuery)
       .populate('contentTypeId');
     
     if (!collection) {
@@ -171,6 +187,14 @@ export class CollectionService {
       const matchConditions: any[] = [
         { contentTypeId: collection.contentTypeId._id }
       ];
+      
+      // Apply access-based filter for contents
+      if (req) {
+        const contentAccessFilter = getAccessFilter(req, 'content');
+        if (Object.keys(contentAccessFilter).length > 0) {
+          matchConditions.push(contentAccessFilter);
+        }
+      }
 
       // Add filter conditions
       for (const filter of collection.filters) {
@@ -212,8 +236,16 @@ export class CollectionService {
       console.log(`Found ${contents.length} contents after filtering`);
       return contents;
     } else {
-      // No filters applied, return all contents for this content type
-      return await Contents.find({ contentTypeId: collection.contentTypeId._id })
+      // No filters applied, return all contents for this content type with access filter
+      const contentsQuery: any = { contentTypeId: collection.contentTypeId._id };
+      
+      // Apply access-based filter for contents
+      if (req) {
+        const contentAccessFilter = getAccessFilter(req, 'content');
+        Object.assign(contentsQuery, contentAccessFilter);
+      }
+      
+      return await Contents.find(contentsQuery)
         .populate('contentTypeId', 'contentTypeName')
         .sort({ createdAt: -1 });
     }

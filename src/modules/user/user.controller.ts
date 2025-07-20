@@ -20,6 +20,7 @@ export class UserController {
           email: user.email,
           userName: user.userName,
           role: user.role,
+          userRoleId: user.userRoleId,
           createdAt: user.createdAt
         },
         message: 'User created successfully'
@@ -45,6 +46,7 @@ export class UserController {
           email: user.email,
           userName: user.userName,
           role: user.role,
+          userRoleId: user.userRoleId,
           createdAt: user.createdAt
         },
         message: 'User created successfully'
@@ -83,7 +85,7 @@ export class UserController {
         filters.toDate = req.query.toDate as string;
       }
 
-      const users = await userService.getAllUsers(Object.keys(filters).length > 0 ? filters : undefined);
+      const users = await userService.getAllUsers(Object.keys(filters).length > 0 ? filters : undefined, req);
       
       res.status(200).json({
         data: users,
@@ -185,20 +187,29 @@ export class UserController {
   async loginUser(req: Request, res: Response) {
     try {
       const loginData: LoginData = req.body;
-      const { user, token } = await userService.loginUser(loginData);
+      const { user, token, userRole, userAccess } = await userService.loginUser(loginData);
       
-      res.status(200).json({
-        data: {
-          user: {
-            id: user._id,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            email: user.email,
-            userName: user.userName,
-            role: user.role
-          },
-          token
+      const responseData: any = {
+        user: {
+          id: user._id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          userName: user.userName,
+          role: userRole?.roleName || 'anonymous',
+          userRoleId: userRole?._id || user.userRoleId
         },
+        token,
+        userRole
+      };
+
+      // Include user access permissions for admin/superAdmin
+      if (userAccess) {
+        responseData.userAccess = userAccess;
+      }
+
+      res.status(200).json({
+        data: responseData,
         message: 'Login successful'
       });
     } catch (error: any) {

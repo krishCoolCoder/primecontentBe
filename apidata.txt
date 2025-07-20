@@ -1,5 +1,12 @@
 # USERS MODULE
 
+# IMPORTANT: ACCESS-BASED FILTERING
+# All listing APIs now implement access-based filtering using the 'canViewAll' permission:
+# - If userAccess.module.canViewAll = true: Returns ALL records
+# - If userAccess.module.canViewAll = false: Returns only records where createdBy = currentUser.userId
+# 
+# The JWT token is automatically decrypted and user information is available in req.headers["currentUser"]
+
 # 1. Register User
 curl --location 'http://localhost:3000/api/users/register' \
 --header 'Content-Type: application/json' \
@@ -9,7 +16,7 @@ curl --location 'http://localhost:3000/api/users/register' \
     "email": "john@example.com",
     "password": "password123",
     "userName": "johndoe",
-    "role": "user"
+    "userRoleId": "686c178d1d121ed96372bc9f"
 }'
 # Response:
 # {
@@ -19,7 +26,7 @@ curl --location 'http://localhost:3000/api/users/register' \
 #         "lastName": "Doe",
 #         "email": "john@example.com",
 #         "userName": "johndoe",
-#         "role": "user",
+#         "userRoleId": "686c178d1d121ed96372bc9f",
 #         "createdAt": "2025-07-07T18:53:01.670Z"
 #     },
 #     "message": "User created successfully"
@@ -42,10 +49,119 @@ curl --location 'http://localhost:3000/api/users/login' \
 #             "lastName": "Doe",
 #             "email": "john@example.com",
 #             "userName": "johndoe",
-#             "role": "user"
+#             "role": "user",
+#             "userRoleId": "686c178d1d121ed96372bc9f"
+#         },
+#         "userRole": {
+#             "_id": "686c178d1d121ed96372bc9f",
+#             "roleName": "User",
+#             "tags": null,
+#             "userAccessId": "686c178d1d121ed96372bd0a",
+#             "createdAt": "2025-07-07T18:53:01.670Z",
+#             "updatedAt": "2025-07-07T18:53:01.670Z"
 #         }
 #     },
 #     "message": "Login successful"
+# }
+
+# 2a. Login Admin User (includes userAccess permissions)
+curl --location 'http://localhost:3000/api/users/login' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "email": "admin@example.com",
+    "password": "password123"
+}'
+# Response:
+# {
+#     "data": {
+#         "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+#         "user": {
+#             "id": "686c178d1d121ed96372bc9e",
+#             "firstName": "Admin",
+#             "lastName": "User",
+#             "email": "admin@example.com",
+#             "userName": "adminuser",
+#             "role": "admin",
+#             "userRoleId": "686c178d1d121ed96372bd00"
+#         },
+#         "userRole": {
+#             "_id": "686c178d1d121ed96372bd00",
+#             "roleName": "Admin",
+#             "tags": null,
+#             "userAccessId": "686c178d1d121ed96372bd0b",
+#             "createdAt": "2025-07-07T18:53:01.670Z",
+#             "updatedAt": "2025-07-07T18:53:01.670Z"
+#         },
+#         "userAccess": {
+#             "_id": "686c178d1d121ed96372bd0b",
+#             "roleId": "686c178d1d121ed96372bd00",
+#             "content": {
+#                 "canRead": true,
+#                 "canCreate": true,
+#                 "canUpdate": true,
+#                 "canDelete": true
+#             },
+#             "contentType": {
+#                 "canRead": true,
+#                 "canCreate": true,
+#                 "canUpdate": true,
+#                 "canDelete": true
+#             },
+#             "tag": {
+#                 "canRead": true,
+#                 "canCreate": true,
+#                 "canUpdate": true,
+#                 "canDelete": true
+#             },
+#             "collections": {
+#                 "canRead": true,
+#                 "canCreate": true,
+#                 "canUpdate": true,
+#                 "canDelete": true
+#             },
+#             "user": {
+#                 "canRead": true,
+#                 "canCreate": true,
+#                 "canUpdate": true,
+#                 "canDelete": true
+#             },
+#             "userRole": {
+#                 "canRead": true,
+#                 "canCreate": true,
+#                 "canUpdate": true,
+#                 "canDelete": true
+#             }
+#         }
+#     },
+#     "message": "Login successful"
+# }
+
+# 3. Create User (Protected Route)
+curl --location 'http://localhost:3000/api/users' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer <TOKEN>' \
+--data-raw '{
+    "firstName": "Jane",
+    "lastName": "Smith",
+    "email": "jane@example.com",
+    "password": "password123",
+    "userName": "janesmith",
+    "role": "user",
+    "userRoleId": "686c178d1d121ed96372bc9f"
+}'
+# Response:
+# {
+#     "data": {
+#         "id": "686c178d1d121ed96372bc9g",
+#         "firstName": "Jane",
+#         "lastName": "Smith",
+#         "email": "jane@example.com",
+#         "userName": "janesmith",
+#         "role": "user",
+#         "userRoleId": "686c178d1d121ed96372bc9f",
+#         "createdAt": "2025-07-07T18:53:01.670Z"
+#     },
+#     "message": "User created successfully"
 # }
 
 # 3. Get All Users
@@ -130,7 +246,7 @@ curl --location --request DELETE 'http://localhost:3000/api/users/<USER_ID>' \
 
 # TAGS MODULE
 
-# 1. Create Tag
+# 1. Create Tag (now includes createdBy field automatically set from JWT token)
 curl --location 'http://localhost:3000/api/tags' \
 --header 'Authorization: Bearer <TOKEN>' \
 --header 'Content-Type: application/json' \
@@ -144,17 +260,20 @@ curl --location 'http://localhost:3000/api/tags' \
 #         "id": "686c178d1d121ed96372bc9d",
 #         "tagName": "Technology",
 #         "description": "Tech-related content and articles",
-#         "createdAt": "2025-07-07T18:53:01.670Z"
+#         "createdAt": "2025-07-07T18:53:01.670Z",
+#         "createdBy": "686c12f59e49d3b9f1bd92e0"
 #     },
 #     "message": "Tag created successfully"
 # }
 
-# 2. Get All Tags
+# 2. Get All Tags (filtered based on userAccess.tag.canViewAll permission)
 curl --location 'http://localhost:3000/api/tags' \
 --header 'Authorization: Bearer <TOKEN>'
-# Response:
+# Response depends on userAccess.tag.canViewAll:
+# - If canViewAll = true: Returns ALL tags
+# - If canViewAll = false: Returns only tags where createdBy = currentUser.userId
 # {
-#     "data": [ ... ],
+#     "data": [ ... ],  // Filtered results based on permissions
 #     "message": "Tags fetched successfully"
 # }
 
@@ -502,14 +621,13 @@ curl --location --request DELETE 'http://localhost:3000/api/contents/<CONTENT_ID
 # USER ROLES MODULE
 
 # 1. Create User Role (with all fields)
-curl --location 'http://localhost:3000/api/userRole' \
---header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODZjMTJmNTllNDlkM2I5ZjFiZDkyZTAiLCJlbWFpbCI6InNhaWtyaXNobmF0ZWNobm9AZ21haWwuY29tIiwicm9sZSI6InN1cGVyQWRtaW4iLCJpYXQiOjE3NTI2MDY5NDIsImV4cCI6MTc1MjY5MzM0Mn0.tW95lEUgAvNBZE3j9twOjOoVrY2y_UG5nt0MsWVX_lc' \
+curl --location 'http://localhost:3000/api/userRoles' \
+--header 'Authorization: Bearer <TOKEN>' \
 --header 'Content-Type: application/json' \
 --data-raw '{
     "roleName": "Content Manager",
     "tags": "<TAG_ID>",
-    "isInherited": false,
-    "inHeritedRoleRef": "<ROLE_ID>"
+    "userAccessId": "<USER_ACCESS_ID>"
 }'
 # Response:
 # {
@@ -517,8 +635,7 @@ curl --location 'http://localhost:3000/api/userRole' \
 #         "id": "686c178d1d121ed96372bc9d",
 #         "roleName": "Content Manager",
 #         "tags": "<TAG_ID>",
-#         "isInherited": false,
-#         "inHeritedRoleRef": "<ROLE_ID>",
+#         "userAccessId": "<USER_ACCESS_ID>",
 #         "createdAt": "2025-07-07T18:53:01.670Z",
 #         "createdBy": null,
 #         "updatedAt": "2025-07-07T18:53:01.670Z",
@@ -527,12 +644,13 @@ curl --location 'http://localhost:3000/api/userRole' \
 #     "message": "User role created successfully"
 # }
 
-# 1b. Create User Role (minimal - only roleName required)
-curl --location 'http://localhost:3000/api/userRole' \
---header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODY5ODFjMDIxMmYyZGZlMjU3NzIyZmIiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTI0MDE5MzUsImV4cCI6MTc1MjQ4ODMzNX0.fq_mV17g_VyCXFSUyMygVpBj4vzvOJ1NW7dtdsOW8Wk' \
+# 1b. Create User Role (minimal - only roleName and userAccessId required)
+curl --location 'http://localhost:3000/api/userRoles' \
+--header 'Authorization: Bearer <TOKEN>' \
 --header 'Content-Type: application/json' \
 --data-raw '{
-    "roleName": "Basic Role"
+    "roleName": "Basic Role",
+    "userAccessId": "<USER_ACCESS_ID>"
 }'
 # Response:
 # {
@@ -540,8 +658,7 @@ curl --location 'http://localhost:3000/api/userRole' \
 #         "id": "686c178d1d121ed96372bc9d",
 #         "roleName": "Basic Role",
 #         "tags": null,
-#         "isInherited": false,
-#         "inHeritedRoleRef": null,
+#         "userAccessId": "<USER_ACCESS_ID>",
 #         "createdAt": "2025-07-07T18:53:01.670Z",
 #         "createdBy": null,
 #         "updatedAt": "2025-07-07T18:53:01.670Z",
@@ -551,8 +668,8 @@ curl --location 'http://localhost:3000/api/userRole' \
 # }
 
 # 2. Get All User Roles
-curl --location 'http://localhost:3000/api/userRole' \
---header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODY5ODFjMDIxMmYyZGZlMjU3NzIyZmIiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTI0MDE5MzUsImV4cCI6MTc1MjQ4ODMzNX0.fq_mV17g_VyCXFSUyMygVpBj4vzvOJ1NW7dtdsOW8Wk'
+curl --location 'http://localhost:3000/api/userRoles' \
+--header 'Authorization: Bearer <TOKEN>'
 # Response:
 # {
 #     "data": [
@@ -564,8 +681,7 @@ curl --location 'http://localhost:3000/api/userRole' \
 #                 "tagName": "Technology",
 #                 "description": "Tech-related content"
 #             },
-#             "isInherited": false,
-#             "inHeritedRoleRef": "<ROLE_ID>",
+#             "userAccessId": "<USER_ACCESS_ID>",
 #             "createdAt": "2025-07-07T18:53:01.670Z",
 #             "createdBy": null,
 #             "updatedAt": "2025-07-07T18:53:01.670Z",
@@ -576,40 +692,40 @@ curl --location 'http://localhost:3000/api/userRole' \
 # }
 
 # 2a. Get All User Roles with Role Name Filter
-curl --location 'http://localhost:3000/api/userRole?roleName=admin' \
---header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODY5ODFjMDIxMmYyZGZlMjU3NzIyZmIiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTI0MDE5MzUsImV4cCI6MTc1MjQ4ODMzNX0.fq_mV17g_VyCXFSUyMygVpBj4vzvOJ1NW7dtdsOW8Wk'
+curl --location 'http://localhost:3000/api/userRoles?roleName=admin' \
+--header 'Authorization: Bearer <TOKEN>'
 # Filters user roles by role name (case-insensitive)
 
 # 2b. Get All User Roles with Tags Filter
-curl --location 'http://localhost:3000/api/userRole?tags=<TAG_ID>' \
---header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODY5ODFjMDIxMmYyZGZlMjU3NzIyZmIiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTI0MDE5MzUsImV4cCI6MTc1MjQ4ODMzNX0.fq_mV17g_VyCXFSUyMygVpBj4vzvOJ1NW7dtdsOW8Wk'
+curl --location 'http://localhost:3000/api/userRoles?tags=<TAG_ID>' \
+--header 'Authorization: Bearer <TOKEN>'
 # Filters user roles by tag ID
 
 # 2c. Get All User Roles with Date Range Filter
-curl --location 'http://localhost:3000/api/userRole?fromDate=2025-01-01&toDate=2025-12-31' \
---header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODY5ODFjMDIxMmYyZGZlMjU3NzIyZmIiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTI0MDE5MzUsImV4cCI6MTc1MjQ4ODMzNX0.fq_mV17g_VyCXFSUyMygVpBj4vzvOJ1NW7dtdsOW8Wk'
+curl --location 'http://localhost:3000/api/userRoles?fromDate=2025-01-01&toDate=2025-12-31' \
+--header 'Authorization: Bearer <TOKEN>'
 # Returns user roles created between the specified dates
 
 # 2d. Get All User Roles with From Date Filter
-curl --location 'http://localhost:3000/api/userRole?fromDate=2025-01-01' \
---header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODY5ODFjMDIxMmYyZGZlMjU3NzIyZmIiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTI0MDE5MzUsImV4cCI6MTc1MjQ4ODMzNX0.fq_mV17g_VyCXFSUyMygVpBj4vzvOJ1NW7dtdsOW8Wk'
+curl --location 'http://localhost:3000/api/userRoles?fromDate=2025-01-01' \
+--header 'Authorization: Bearer <TOKEN>'
 # Returns user roles created after the specified date
 
 # 2e. Get All User Roles with To Date Filter
-curl --location 'http://localhost:3000/api/userRole?toDate=2025-12-31' \
---header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODY5ODFjMDIxMmYyZGZlMjU3NzIyZmIiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTI0MDE5MzUsImV4cCI6MTc1MjQ4ODMzNX0.fq_mV17g_VyCXFSUyMygVpBj4vzvOJ1NW7dtdsOW8Wk'
+curl --location 'http://localhost:3000/api/userRoles?toDate=2025-12-31' \
+--header 'Authorization: Bearer <TOKEN>'
 # Returns user roles created up to the specified date
 
 # 2f. Get All User Roles with Multiple Filters
-curl --location 'http://localhost:3000/api/userRole?roleName=admin&fromDate=2025-01-01&tags=<TAG_ID>' \
---header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODY5ODFjMDIxMmYyZGZlMjU3NzIyZmIiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTI0MDE5MzUsImV4cCI6MTc1MjQ4ODMzNX0.fq_mV17g_VyCXFSUyMygVpBj4vzvOJ1NW7dtdsOW8Wk'
+curl --location 'http://localhost:3000/api/userRoles?roleName=admin&fromDate=2025-01-01&tags=<TAG_ID>' \
+--header 'Authorization: Bearer <TOKEN>'
 # Combines multiple filters: role name contains "admin", created after 2025-01-01, and has specific tag
 
 # Note: All filters are optional and can be combined. If no filters are provided, all user roles are returned.
 
 # 3. Get User Roles Count
-curl --location 'http://localhost:3000/api/userRole/count' \
---header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODY5ODFjMDIxMmYyZGZlMjU3NzIyZmIiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTI0MDE5MzUsImV4cCI6MTc1MjQ4ODMzNX0.fq_mV17g_VyCXFSUyMygVpBj4vzvOJ1NW7dtdsOW8Wk'
+curl --location 'http://localhost:3000/api/userRoles/count' \
+--header 'Authorization: Bearer <TOKEN>'
 # Response:
 # {
 #     "data": { "count": 1 },
@@ -617,8 +733,8 @@ curl --location 'http://localhost:3000/api/userRole/count' \
 # }
 
 # 4. Get User Roles by Tag
-curl --location 'http://localhost:3000/api/userRole/tag/<TAG_ID>' \
---header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODY5ODFjMDIxMmYyZGZlMjU3NzIyZmIiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTI0MDE5MzUsImV4cCI6MTc1MjQ4ODMzNX0.fq_mV17g_VyCXFSUyMygVpBj4vzvOJ1NW7dtdsOW8Wk'
+curl --location 'http://localhost:3000/api/userRoles/tag/<TAG_ID>' \
+--header 'Authorization: Bearer <TOKEN>'
 # Response:
 # {
 #     "data": [ ... ],
@@ -626,8 +742,8 @@ curl --location 'http://localhost:3000/api/userRole/tag/<TAG_ID>' \
 # }
 
 # 5. Get User Role by ID
-curl --location 'http://localhost:3000/api/userRole/<USER_ROLE_ID>' \
---header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODY5ODFjMDIxMmYyZGZlMjU3NzIyZmIiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTI0MDE5MzUsImV4cCI6MTc1MjQ4ODMzNX0.fq_mV17g_VyCXFSUyMygVpBj4vzvOJ1NW7dtdsOW8Wk'
+curl --location 'http://localhost:3000/api/userRoles/<USER_ROLE_ID>' \
+--header 'Authorization: Bearer <TOKEN>'
 # Response:
 # {
 #     "data": { ... },
@@ -635,14 +751,13 @@ curl --location 'http://localhost:3000/api/userRole/<USER_ROLE_ID>' \
 # }
 
 # 6. Update User Role
-curl --location --request PUT 'http://localhost:3000/api/userRole/<USER_ROLE_ID>' \
---header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODY5ODFjMDIxMmYyZGZlMjU3NzIyZmIiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTI0MDE5MzUsImV4cCI6MTc1MjQ4ODMzNX0.fq_mV17g_VyCXFSUyMygVpBj4vzvOJ1NW7dtdsOW8Wk' \
+curl --location --request PUT 'http://localhost:3000/api/userRoles/<USER_ROLE_ID>' \
+--header 'Authorization: Bearer <TOKEN>' \
 --header 'Content-Type: application/json' \
 --data-raw '{
     "roleName": "Updated Content Manager",
     "tags": "<TAG_ID>",
-    "isInherited": true,
-    "inHeritedRoleRef": "<PARENT_ROLE_ID>"
+    "userAccessId": "<NEW_USER_ACCESS_ID>"
 }'
 # Response:
 # {
@@ -650,8 +765,7 @@ curl --location --request PUT 'http://localhost:3000/api/userRole/<USER_ROLE_ID>
 #         "id": "686c178d1d121ed96372bc9d",
 #         "roleName": "Updated Content Manager",
 #         "tags": "<TAG_ID>",
-#         "isInherited": true,
-#         "inHeritedRoleRef": "<PARENT_ROLE_ID>",
+#         "userAccessId": "<NEW_USER_ACCESS_ID>",
 #         "createdAt": "2025-07-07T18:53:01.670Z",
 #         "createdBy": null,
 #         "updatedAt": "2025-07-07T19:00:00.000Z",
@@ -661,8 +775,8 @@ curl --location --request PUT 'http://localhost:3000/api/userRole/<USER_ROLE_ID>
 # }
 
 # 7. Delete User Role
-curl --location --request DELETE 'http://localhost:3000/api/userRole/<USER_ROLE_ID>' \
---header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODY5ODFjMDIxMmYyZGZlMjU3NzIyZmIiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTI0MDE5MzUsImV4cCI6MTc1MjQ4ODMzNX0.fq_mV17g_VyCXFSUyMygVpBj4vzvOJ1NW7dtdsOW8Wk'
+curl --location --request DELETE 'http://localhost:3000/api/userRoles/<USER_ROLE_ID>' \
+--header 'Authorization: Bearer <TOKEN>'
 # Response:
 # {
 #     "data": null,
@@ -671,9 +785,111 @@ curl --location --request DELETE 'http://localhost:3000/api/userRole/<USER_ROLE_
 
 # USER ACCESS MODULE
 
-# 1. Get All User Access Records
+# 1. Create User Access (NEW - with canViewAll property)
 curl --location 'http://localhost:3000/api/userAccess' \
---header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODY5ODFjMDIxMmYyZGZlMjU3NzIyZmIiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTI0MDE5MzUsImV4cCI6MTc1MjQ4ODMzNX0.fq_mV17g_VyCXFSUyMygVpBj4vzvOJ1NW7dtdsOW8Wk'
+--header 'Authorization: Bearer <TOKEN>' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "roleId": "6875509d67009a5eb4b4a3f4",
+    "content": {
+        "canViewAll": false,
+        "canRead": true,
+        "canCreate": true,
+        "canUpdate": false,
+        "canDelete": false
+    },
+    "contentType": {
+        "canViewAll": false,
+        "canRead": true,
+        "canCreate": false,
+        "canUpdate": false,
+        "canDelete": false
+    },
+    "tag": {
+        "canViewAll": true,
+        "canRead": true,
+        "canCreate": true,
+        "canUpdate": true,
+        "canDelete": false
+    },
+    "collections": {
+        "canViewAll": false,
+        "canRead": true,
+        "canCreate": false,
+        "canUpdate": false,
+        "canDelete": false
+    },
+    "user": {
+        "canViewAll": false,
+        "canRead": false,
+        "canCreate": false,
+        "canUpdate": false,
+        "canDelete": false
+    },
+    "userRole": {
+        "canViewAll": false,
+        "canRead": true,
+        "canCreate": false,
+        "canUpdate": false,
+        "canDelete": false
+    }
+}'
+# Response:
+# {
+#     "data": {
+#         "_id": "686c178d1d121ed96372bc9d",
+#         "roleId": "6875509d67009a5eb4b4a3f4",
+#         "content": {
+#             "canViewAll": false,
+#             "canRead": true,
+#             "canCreate": true,
+#             "canUpdate": false,
+#             "canDelete": false
+#         },
+#         "contentType": {
+#             "canViewAll": false,
+#             "canRead": true,
+#             "canCreate": false,
+#             "canUpdate": false,
+#             "canDelete": false
+#         },
+#             "tag": {
+#                 "canViewAll": true,
+#                 "canRead": true,
+#                 "canCreate": true,
+#                 "canUpdate": true,
+#                 "canDelete": false
+#             },
+#             "collections": {
+#                 "canViewAll": false,
+#                 "canRead": true,
+#                 "canCreate": false,
+#                 "canUpdate": false,
+#                 "canDelete": false
+#             },
+#             "user": {
+#                 "canViewAll": false,
+#                 "canRead": false,
+#                 "canCreate": false,
+#                 "canUpdate": false,
+#                 "canDelete": false
+#             },
+#             "userRole": {
+#                 "canViewAll": false,
+#                 "canRead": true,
+#                 "canCreate": false,
+#                 "canUpdate": false,
+#                 "canDelete": false
+#             },
+#         "createdAt": "2025-07-07T18:53:01.670Z",
+#         "updatedAt": "2025-07-07T18:53:01.670Z"
+#     },
+#     "message": "User access created successfully"
+# }
+
+# 2. Get All User Access Records
+curl --location 'http://localhost:3000/api/userAccess' \
+--header 'Authorization: Bearer <TOKEN>'
 # Response:
 # {
 #     "data": [
@@ -684,36 +900,42 @@ curl --location 'http://localhost:3000/api/userAccess' \
 #                 "roleName": "SuperAdmin"
 #             },
 #             "content": {
+#                 "canViewAll": true,
 #                 "canRead": true,
 #                 "canCreate": true,
 #                 "canUpdate": true,
 #                 "canDelete": true
 #             },
 #             "contentType": {
+#                 "canViewAll": true,
 #                 "canRead": true,
 #                 "canCreate": true,
 #                 "canUpdate": true,
 #                 "canDelete": true
 #             },
 #             "tag": {
+#                 "canViewAll": true,
 #                 "canRead": true,
 #                 "canCreate": true,
 #                 "canUpdate": true,
 #                 "canDelete": true
 #             },
 #             "collections": {
+#                 "canViewAll": true,
 #                 "canRead": true,
 #                 "canCreate": true,
 #                 "canUpdate": true,
 #                 "canDelete": true
 #             },
 #             "user": {
+#                 "canViewAll": true,
 #                 "canRead": true,
 #                 "canCreate": true,
 #                 "canUpdate": true,
 #                 "canDelete": true
 #             },
 #             "userRole": {
+#                 "canViewAll": true,
 #                 "canRead": true,
 #                 "canCreate": true,
 #                 "canUpdate": true,
@@ -726,69 +948,75 @@ curl --location 'http://localhost:3000/api/userAccess' \
 #     "message": "User access records fetched successfully"
 # }
 
-# 2. Get User Access Count
+# 3. Get User Access Count
 curl --location 'http://localhost:3000/api/userAccess/count' \
---header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODY5ODFjMDIxMmYyZGZlMjU3NzIyZmIiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTI0MDE5MzUsImV4cCI6MTc1MjQ4ODMzNX0.fq_mV17g_VyCXFSUyMygVpBj4vzvOJ1NW7dtdsOW8Wk'
+--header 'Authorization: Bearer <TOKEN>'
 # Response:
 # {
 #     "data": { "count": 4 },
 #     "message": "User access count fetched successfully"
 # }
 
-# 3. Get User Access by Role ID
+# 4. Get User Access by Role ID
 curl --location 'http://localhost:3000/api/userAccess/role/<ROLE_ID>' \
---header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODY5ODFjMDIxMmYyZGZlMjU3NzIyZmIiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTI0MDE5MzUsImV4cCI6MTc1MjQ4ODMzNX0.fq_mV17g_VyCXFSUyMygVpBj4vzvOJ1NW7dtdsOW8Wk'
+--header 'Authorization: Bearer <TOKEN>'
 # Response:
 # {
 #     "data": { ... },
 #     "message": "User access fetched successfully"
 # }
 
-# 4. Get User Access by ID
+# 5. Get User Access by ID
 curl --location 'http://localhost:3000/api/userAccess/<USER_ACCESS_ID>' \
---header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODY5ODFjMDIxMmYyZGZlMjU3NzIyZmIiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTI0MDE5MzUsImV4cCI6MTc1MjQ4ODMzNX0.fq_mV17g_VyCXFSUyMygVpBj4vzvOJ1NW7dtdsOW8Wk'
+--header 'Authorization: Bearer <TOKEN>'
 # Response:
 # {
 #     "data": { ... },
 #     "message": "User access fetched successfully"
 # }
 
-# 5. Update User Access
+# 6. Update User Access (UPDATED - now includes canViewAll property)
 curl --location --request PUT 'http://localhost:3000/api/userAccess/<USER_ACCESS_ID>' \
---header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODY5ODFjMDIxMmYyZGZlMjU3NzIyZmIiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTI0MDE5MzUsImV4cCI6MTc1MjQ4ODMzNX0.fq_mV17g_VyCXFSUyMygVpBj4vzvOJ1NW7dtdsOW8Wk' \
+--header 'Authorization: Bearer <TOKEN>' \
 --header 'Content-Type: application/json' \
 --data-raw '{
     "content": {
+        "canViewAll": true,
         "canRead": true,
         "canCreate": true,
         "canUpdate": false,
         "canDelete": false
     },
     "contentType": {
+        "canViewAll": false,
         "canRead": true,
         "canCreate": false,
         "canUpdate": false,
         "canDelete": false
     },
     "tag": {
+        "canViewAll": true,
         "canRead": true,
         "canCreate": true,
         "canUpdate": true,
         "canDelete": false
     },
     "collections": {
+        "canViewAll": false,
         "canRead": true,
         "canCreate": false,
         "canUpdate": false,
         "canDelete": false
     },
     "user": {
+        "canViewAll": false,
         "canRead": false,
         "canCreate": false,
         "canUpdate": false,
         "canDelete": false
     },
     "userRole": {
+        "canViewAll": false,
         "canRead": true,
         "canCreate": false,
         "canUpdate": false,
@@ -804,41 +1032,47 @@ curl --location --request PUT 'http://localhost:3000/api/userAccess/<USER_ACCESS
 #             "roleName": "Admin"
 #         },
 #         "content": {
+#             "canViewAll": true,
 #             "canRead": true,
 #             "canCreate": true,
 #             "canUpdate": false,
 #             "canDelete": false
 #         },
 #         "contentType": {
+#             "canViewAll": false,
 #             "canRead": true,
 #             "canCreate": false,
 #             "canUpdate": false,
 #             "canDelete": false
 #         },
-#         "tag": {
-#             "canRead": true,
-#             "canCreate": true,
-#             "canUpdate": true,
-#             "canDelete": false
-#         },
-#         "collections": {
-#             "canRead": true,
-#             "canCreate": false,
-#             "canUpdate": false,
-#             "canDelete": false
-#         },
-#         "user": {
-#             "canRead": false,
-#             "canCreate": false,
-#             "canUpdate": false,
-#             "canDelete": false
-#         },
-#         "userRole": {
-#             "canRead": true,
-#             "canCreate": false,
-#             "canUpdate": false,
-#             "canDelete": false
-#         },
+#             "tag": {
+#                 "canViewAll": true,
+#                 "canRead": true,
+#                 "canCreate": true,
+#                 "canUpdate": true,
+#                 "canDelete": false
+#             },
+#             "collections": {
+#                 "canViewAll": false,
+#                 "canRead": true,
+#                 "canCreate": false,
+#                 "canUpdate": false,
+#                 "canDelete": false
+#             },
+#             "user": {
+#                 "canViewAll": false,
+#                 "canRead": false,
+#                 "canCreate": false,
+#                 "canUpdate": false,
+#                 "canDelete": false
+#             },
+#             "userRole": {
+#                 "canViewAll": false,
+#                 "canRead": true,
+#                 "canCreate": false,
+#                 "canUpdate": false,
+#                 "canDelete": false
+#             },
 #         "createdAt": "2025-07-07T18:53:01.670Z",
 #         "updatedAt": "2025-07-07T19:00:00.000Z"
 #     },

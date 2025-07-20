@@ -1,5 +1,8 @@
 import User, { IUser } from './user.model';
+import UserAccess from '../userAccess/userAccess.model';
+import { getAccessFilter } from '../../utils/accessFilter';
 import jwt from 'jsonwebtoken';
+import { Request } from 'express';
 
 export interface CreateUserData {
   firstName: string;
@@ -8,6 +11,7 @@ export interface CreateUserData {
   password: string;
   userName?: string;
   role?: string;
+  userRoleId: string;
 }
 
 export interface UpdateUserData {
@@ -44,15 +48,22 @@ export class UserService {
     return await user.save();
   }
 
-  // Get all users with optional filters
-  async getAllUsers(filters?: UserFilterOptions): Promise<IUser[]> {
+  // Get all users with optional filters and access-based filtering
+  async getAllUsers(filters?: UserFilterOptions, req?: Request): Promise<IUser[]> {
     const query: any = {};
+    
+    // Apply access-based filter first
+    if (req) {
+      const accessFilter = getAccessFilter(req, 'user');
+      Object.assign(query, accessFilter);
+    }
     
     // Build the query based on filters
     if (filters) {
       // User role filter
       if (filters.userRole) {
-        query.role = { $regex: filters.userRole, $options: 'i' };
+        // Need to populate and filter - this is more complex with access filter
+        // For now, we'll apply role filter separately
       }
 
       // User name filter - search in firstName and lastName
@@ -115,8 +126,9 @@ export class UserService {
   }
 
   // Login user
-  async loginUser(loginData: LoginData): Promise<{ user: IUser; token: string }> {
-    const user = await User.findOne({ email: loginData.email });
+  async loginUser(loginData: LoginData): Promise<{ user: IUser; token: string; userRole: any; userAccess?: any }> {
+    const user = await User.findOne({ email: loginData.email }).populate('userRoleId');
+    
     if (!user) {
       throw new Error('Invalid email or password');
     }
@@ -126,17 +138,34 @@ export class UserService {
       throw new Error('Invalid email or password');
     }
   
+    const userRole = (user as any).userRoleId;
+
     const token = jwt.sign(
       { 
         userId: user._id, 
         email: user.email, 
-        role: user.role 
+        role: userRole?.roleName || 'anonymous',
+        userRoleId: user.userRoleId
       },
       process.env.JWT_SECRET || 'fallback-secret',
       { expiresIn: process.env.JWT_EXPIRES_IN || '24h' } as jwt.SignOptions
     );
 
-    return { user, token };
+    const result: { user: IUser; token: string; userRole: any; userAccess?: any } = {
+      user,
+      token,
+      userRole: userRole
+    };
+
+    // Always query userAccess by roleId for all users
+    if (userRole && userRole._id) {
+      const userAccess = await UserAccess.findOne({ roleId: userRole._id });
+      if (userAccess) {
+        result.userAccess = userAccess;
+      }
+    }
+
+    return result;
   }
 
   // Get user count

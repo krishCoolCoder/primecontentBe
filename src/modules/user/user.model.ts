@@ -9,6 +9,7 @@ export interface IUser extends Document {
   password: string;
   role: string;
   userName: string;
+  userRoleId: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -43,10 +44,15 @@ const userSchema = new Schema<IUser>({
     required: [true, 'Password is required'],
     minlength: [6, 'Password must be at least 6 characters long']
   },
-  role: {
-    type: String,
-    enum: ['superAdmin', 'admin', 'user', 'annonymous'],
-    default: 'annonymous'
+  // role: {
+  //   type: String,
+  //   enum: ['superAdmin', 'admin', 'user', 'anonymous'],
+  //   default: 'anonymous'
+  // },
+  userRoleId: {
+    type: Schema.Types.ObjectId,
+    ref: 'UserRoles',
+    required: [true, 'User role ID is required']
   }
 }, {
   timestamps: true

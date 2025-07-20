@@ -13,8 +13,7 @@ export class UserRolesController {
           id: userRole._id,
           roleName: userRole.roleName,
           tags: userRole.tags,
-          isInherited: userRole.isInherited,
-          inHeritedRoleRef: userRole.inHeritedRoleRef,
+          userAccessId: userRole.userAccessId,
           createdAt: userRole.createdAt,
           createdBy: userRole.createdBy,
           updatedAt: userRole.updatedAt,
@@ -52,7 +51,7 @@ export class UserRolesController {
         filters.tags = req.query.tags as string;
       }
 
-      const userRoles = await userRolesService.getAllUserRoles(Object.keys(filters).length > 0 ? filters : undefined);
+      const userRoles = await userRolesService.getAllUserRoles(Object.keys(filters).length > 0 ? filters : undefined, req);
       
       res.status(200).json({
         data: userRoles,
@@ -110,8 +109,7 @@ export class UserRolesController {
           id: userRole._id,
           roleName: userRole.roleName,
           tags: userRole.tags,
-          isInherited: userRole.isInherited,
-          inHeritedRoleRef: userRole.inHeritedRoleRef,
+          userAccessId: userRole.userAccessId,
           createdAt: userRole.createdAt,
           createdBy: userRole.createdBy,
           updatedAt: userRole.updatedAt,
@@ -173,7 +171,7 @@ export class UserRolesController {
   async getUserRolesByTag(req: Request, res: Response) {
     try {
       const { tagId } = req.params;
-      const userRoles = await userRolesService.getUserRolesByTag(tagId);
+      const userRoles = await userRolesService.getUserRolesByTag(tagId, req);
       
       res.status(200).json({
         data: userRoles,

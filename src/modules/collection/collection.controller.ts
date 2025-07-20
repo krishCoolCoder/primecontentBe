@@ -48,7 +48,7 @@ export class CollectionController {
         filters.toDate = req.query.toDate as string;
       }
 
-      const collections = await collectionService.getAllCollections(Object.keys(filters).length > 0 ? filters : undefined);
+      const collections = await collectionService.getAllCollections(Object.keys(filters).length > 0 ? filters : undefined, req);
       
       res.status(200).json({
         data: collections,
@@ -161,7 +161,7 @@ export class CollectionController {
       const { collectionName } = req.params;
       const queryParams = req.query;
       
-      const contents = await collectionService.getCollectionContents(collectionName, queryParams);
+      const contents = await collectionService.getCollectionContents(collectionName, queryParams, req);
       
       res.status(200).json({
         data: contents,

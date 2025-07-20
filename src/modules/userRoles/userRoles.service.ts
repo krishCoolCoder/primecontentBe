@@ -1,19 +1,19 @@
 import UserRoles, { IUserRoles } from './userRoles.model';
 import Tags from '../tags/tags.model';
 import userAccessService from '../userAccess/userAccess.service';
+import { getAccessFilter } from '../../utils/accessFilter';
+import { Request } from 'express';
 
 export interface CreateUserRolesData {
   roleName: string;
   tags?: string; // ObjectId as string - now optional
-  isInherited?: boolean;
-  inHeritedRoleRef?: string; // ObjectId as string
+  userAccessId: string; // ObjectId as string - mandatory
 }
 
 export interface UpdateUserRolesData {
   roleName?: string;
   tags?: string; // ObjectId as string - now optional
-  isInherited?: boolean;
-  inHeritedRoleRef?: string; // ObjectId as string
+  userAccessId?: string; // ObjectId as string
 }
 
 export interface UserRolesFilterOptions {
@@ -37,19 +37,31 @@ export class UserRolesService {
       const existingRole = await UserRoles.findOne({ roleName: roleData.roleName });
       if (!existingRole) {
         console.log(`Creating default role: ${roleData.roleName}`);
-        const role = new UserRoles({
+        
+        // Create a temporary role first (we'll update it with userAccessId later)
+        // We need to temporarily bypass the required validation for userAccessId
+        const tempRole = new UserRoles({
           roleName: roleData.roleName,
           createdAt: new Date(),
           updatedAt: new Date()
         });
-        const savedRole = await role.save();
         
-        // Create user access for the new role
+        // Save without validation to bypass required userAccessId
+        const savedRole = await tempRole.save({ validateBeforeSave: false });
+        
+        // Create user access for the role
+        let userAccess;
         if (roleData.roleName === 'SuperAdmin') {
-          await userAccessService.createSuperAdminAccess(savedRole._id.toString());
+          userAccess = await userAccessService.createSuperAdminAccess(savedRole._id.toString());
         } else {
-          await userAccessService.createUserAccess(savedRole._id.toString());
+          userAccess = await userAccessService.createUserAccess(savedRole._id.toString());
         }
+        
+        // Update the role with the userAccessId
+        await UserRoles.findByIdAndUpdate(savedRole._id, {
+          userAccessId: userAccess._id,
+          updatedAt: new Date()
+        });
       }
     }
   }
@@ -70,25 +82,33 @@ export class UserRolesService {
       }
     }
 
+    // Validate userAccessId exists
+    const existingUserAccess = await userAccessService.getUserAccessById(userRoleData.userAccessId);
+    if (!existingUserAccess) {
+      throw new Error('User access not found');
+    }
+
     const userRole = new UserRoles({
       roleName: userRoleData.roleName,
       tags: userRoleData.tags || undefined,
-      isInherited: userRoleData.isInherited || false,
-      inHeritedRoleRef: userRoleData.inHeritedRoleRef || null,
+      userAccessId: userRoleData.userAccessId,
       createdAt: new Date(),
       updatedAt: new Date()
     });
     const savedRole = await userRole.save();
 
-    // Create user access for the new role
-    await userAccessService.createUserAccess(savedRole._id.toString());
-
     return savedRole;
   }
 
   // Get all user roles
-  async getAllUserRoles(filters?: UserRolesFilterOptions): Promise<IUserRoles[]> {
+  async getAllUserRoles(filters?: UserRolesFilterOptions, req?: Request): Promise<IUserRoles[]> {
     const query: any = {};
+    
+    // Apply access-based filter first
+    if (req) {
+      const accessFilter = getAccessFilter(req, 'userRole');
+      Object.assign(query, accessFilter);
+    }
     
     // Build the query based on filters
     if (filters) {
@@ -178,8 +198,16 @@ export class UserRolesService {
   }
 
   // Get user roles by tag
-  async getUserRolesByTag(tagId: string): Promise<IUserRoles[]> {
-    return await UserRoles.find({ tags: tagId })
+  async getUserRolesByTag(tagId: string, req?: Request): Promise<IUserRoles[]> {
+    const query: any = { tags: tagId };
+    
+    // Apply access-based filter first
+    if (req) {
+      const accessFilter = getAccessFilter(req, 'userRole');
+      Object.assign(query, accessFilter);
+    }
+    
+    return await UserRoles.find(query)
       .populate('tags', 'tagName description')
       .populate('createdBy', 'firstName lastName email')
       .populate('updatedBy', 'firstName lastName email')

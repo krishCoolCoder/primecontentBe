@@ -1,5 +1,7 @@
 import Contents, { IContents, IContentField } from './contents.model';
 import ContentType from '../contentType/contentType.model';
+import { getAccessFilter } from '../../utils/accessFilter';
+import { Request } from 'express';
 
 export interface CreateContentsData {
   contentType: string;
@@ -43,8 +45,14 @@ export class ContentsService {
   }
 
   // Get all contents with optional filters
-  async getAllContents(filters?: ContentsFilterOptions): Promise<IContents[]> {
+  async getAllContents(filters?: ContentsFilterOptions, req?: Request): Promise<IContents[]> {
     const query: any = {};
+    
+    // Apply access-based filter first
+    if (req) {
+      const accessFilter = getAccessFilter(req, 'content');
+      Object.assign(query, accessFilter);
+    }
     
     // Build the query based on filters
     if (filters) {
@@ -79,8 +87,16 @@ export class ContentsService {
   }
 
   // Get contents by content type
-  async getContentsByContentType(contentTypeId: string): Promise<IContents[]> {
-    return await Contents.find({ contentTypeId })
+  async getContentsByContentType(contentTypeId: string, req?: Request): Promise<IContents[]> {
+    const query: any = { contentTypeId };
+    
+    // Apply access-based filter first
+    if (req) {
+      const accessFilter = getAccessFilter(req, 'content');
+      Object.assign(query, accessFilter);
+    }
+    
+    return await Contents.find(query)
       .populate('contentTypeId', 'contentTypeName tags')
       .sort({ createdAt: -1 });
   }

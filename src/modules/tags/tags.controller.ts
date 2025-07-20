@@ -6,14 +6,15 @@ export class TagsController {
   async createTag(req: Request, res: Response) {
     try {
       const tagData: CreateTagsData = req.body;
-      const tag = await tagsService.createTag(tagData);
+      const tag = await tagsService.createTag(tagData, req);
       
       res.status(201).json({
         data: {
           id: tag._id,
           tagName: tag.tagName,
           description: tag.description,
-          createdAt: tag.createdAt
+          createdAt: tag.createdAt,
+          createdBy: tag.createdBy
         },
         message: 'Tag created successfully'
       });
@@ -43,7 +44,7 @@ export class TagsController {
         filters.toDate = req.query.toDate as string;
       }
 
-      const tags = await tagsService.getAllTags(Object.keys(filters).length > 0 ? filters : undefined);
+      const tags = await tagsService.getAllTags(Object.keys(filters).length > 0 ? filters : undefined, req);
       
       res.status(200).json({
         data: tags,

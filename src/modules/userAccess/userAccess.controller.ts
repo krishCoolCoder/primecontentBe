@@ -1,11 +1,29 @@
 import { Request, Response } from 'express';
-import userAccessService, { UpdateUserAccessData } from './userAccess.service';
+import userAccessService, { CreateUserAccessData, UpdateUserAccessData } from './userAccess.service';
 
 export class UserAccessController {
+  // Create user access
+  async createUserAccess(req: Request, res: Response) {
+    try {
+      const accessData: CreateUserAccessData = req.body;
+      const userAccess = await userAccessService.createUserAccessManually(accessData);
+      
+      res.status(201).json({
+        data: userAccess,
+        message: 'User access created successfully'
+      });
+    } catch (error: any) {
+      res.status(400).json({
+        data: null,
+        message: error.message
+      });
+    }
+  }
+
   // Get all user access records
   async getAllUserAccess(req: Request, res: Response) {
     try {
-      const userAccessList = await userAccessService.getAllUserAccess();
+      const userAccessList = await userAccessService.getAllUserAccess(req);
       
       res.status(200).json({
         data: userAccessList,

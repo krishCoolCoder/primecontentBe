@@ -5,7 +5,9 @@ export interface ITags extends Document {
   tagName: string;
   description: string;
   createdAt: Date;
+  createdBy: mongoose.Types.ObjectId | null;
   updatedAt: Date;
+  updatedBy: mongoose.Types.ObjectId | null;
 }
 
 const tagsSchema = new Schema<ITags>({
@@ -19,6 +21,16 @@ const tagsSchema = new Schema<ITags>({
     type: String,
     required: [true, 'Description is required'],
     trim: true
+  },
+  createdBy: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
+  },
+  updatedBy: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
   }
 }, {
   timestamps: true

@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IModulePermissions {
+  canViewAll: boolean;
   canRead: boolean;
   canCreate: boolean;
   canUpdate: boolean;
@@ -21,6 +22,10 @@ export interface IUserAccess extends Document {
 }
 
 const modulePermissionsSchema = new Schema<IModulePermissions>({
+  canViewAll: {
+    type: Boolean,
+    default: false
+  },
   canRead: {
     type: Boolean,
     default: false
@@ -49,6 +54,7 @@ const userAccessSchema = new Schema<IUserAccess>({
   content: {
     type: modulePermissionsSchema,
     default: () => ({
+      canViewAll: false,
       canRead: false,
       canCreate: false,
       canUpdate: false,
@@ -58,6 +64,7 @@ const userAccessSchema = new Schema<IUserAccess>({
   contentType: {
     type: modulePermissionsSchema,
     default: () => ({
+      canViewAll: false,
       canRead: false,
       canCreate: false,
       canUpdate: false,
@@ -67,6 +74,7 @@ const userAccessSchema = new Schema<IUserAccess>({
   tag: {
     type: modulePermissionsSchema,
     default: () => ({
+      canViewAll: false,
       canRead: false,
       canCreate: false,
       canUpdate: false,
@@ -76,6 +84,7 @@ const userAccessSchema = new Schema<IUserAccess>({
   collections: {
     type: modulePermissionsSchema,
     default: () => ({
+      canViewAll: false,
       canRead: false,
       canCreate: false,
       canUpdate: false,
@@ -85,6 +94,7 @@ const userAccessSchema = new Schema<IUserAccess>({
   user: {
     type: modulePermissionsSchema,
     default: () => ({
+      canViewAll: false,
       canRead: false,
       canCreate: false,
       canUpdate: false,
@@ -94,6 +104,7 @@ const userAccessSchema = new Schema<IUserAccess>({
   userRole: {
     type: modulePermissionsSchema,
     default: () => ({
+      canViewAll: false,
       canRead: false,
       canCreate: false,
       canUpdate: false,

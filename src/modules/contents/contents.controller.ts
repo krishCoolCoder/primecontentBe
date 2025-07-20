@@ -44,7 +44,7 @@ export class ContentsController {
         filters.toDate = req.query.toDate as string;
       }
 
-      const contents = await contentsService.getAllContents(Object.keys(filters).length > 0 ? filters : undefined);
+      const contents = await contentsService.getAllContents(Object.keys(filters).length > 0 ? filters : undefined, req);
       
       res.status(200).json({
         data: contents,
@@ -87,7 +87,7 @@ export class ContentsController {
   async getContentsByContentType(req: Request, res: Response) {
     try {
       const { contentTypeId } = req.params;
-      const contents = await contentsService.getContentsByContentType(contentTypeId);
+      const contents = await contentsService.getContentsByContentType(contentTypeId, req);
       
       res.status(200).json({
         data: contents,

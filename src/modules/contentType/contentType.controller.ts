@@ -58,7 +58,7 @@ export class ContentTypeController {
         filters.toDate = req.query.toDate as string;
       }
 
-      const contentTypes = await contentTypeService.getAllContentTypes(Object.keys(filters).length > 0 ? filters : undefined);
+      const contentTypes = await contentTypeService.getAllContentTypes(Object.keys(filters).length > 0 ? filters : undefined, req);
       
       res.status(200).json({
         data: contentTypes,
@@ -187,7 +187,7 @@ export class ContentTypeController {
   async getContentTypesByTag(req: Request, res: Response) {
     try {
       const { tagName } = req.params;
-      const contentTypes = await contentTypeService.getContentTypesByTag(tagName);
+      const contentTypes = await contentTypeService.getContentTypesByTag(tagName, req);
       
       res.status(200).json({
         data: contentTypes,
@@ -205,7 +205,7 @@ export class ContentTypeController {
   async getContentsByContentTypeName(req: Request, res: Response) {
     try {
       const { contentTypeName } = req.params;
-      const contents = await contentTypeService.getContentsByContentTypeName(contentTypeName);
+      const contents = await contentTypeService.getContentsByContentTypeName(contentTypeName, req);
       
       res.status(200).json({
         data: contents,

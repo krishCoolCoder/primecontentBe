@@ -4,8 +4,7 @@ export interface IUserRoles extends Document {
   _id: mongoose.Types.ObjectId;
   roleName: string;
   tags?: mongoose.Types.ObjectId;
-  isInherited?: boolean;
-  inHeritedRoleRef?: mongoose.Types.ObjectId;
+  userAccessId: mongoose.Types.ObjectId;
   createdAt: Date;
   createdBy: mongoose.Types.ObjectId | null;
   updatedAt: Date;
@@ -24,15 +23,10 @@ const userRolesSchema = new Schema<IUserRoles>({
     ref: 'Tags',
     required: false
   },
-  isInherited: {
-    type: Boolean,
-    required: false,
-    default: false
-  },
-  inHeritedRoleRef: {
+  userAccessId: {
     type: Schema.Types.ObjectId,
-    required: false,
-    default: null
+    ref: 'UserAccess',
+    required: [true, 'User access ID is required']
   },
   createdAt: {
     type: Date,

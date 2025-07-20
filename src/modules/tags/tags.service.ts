@@ -1,4 +1,6 @@
 import Tags, { ITags } from './tags.model';
+import { getAccessFilter } from '../../utils/accessFilter';
+import { Request } from 'express';
 
 export interface CreateTagsData {
   tagName: string;
@@ -18,19 +20,44 @@ export interface TagsFilterOptions {
 
 export class TagsService {
   // Create tag
-  async createTag(tagData: CreateTagsData): Promise<ITags> {
+  async createTag(tagData: CreateTagsData, req?: Request): Promise<ITags> {
     const existingTag = await Tags.findOne({ tagName: tagData.tagName });
     if (existingTag) {
       throw new Error('Tag with this name already exists');
     }
 
-    const tag = new Tags(tagData);
+    const tagToCreate = {
+      ...tagData,
+      createdBy: null,
+      updatedBy: null
+    };
+
+    // Set createdBy from currentUser if available
+    if (req) {
+      try {
+        const currentUserHeader = req.headers["currentUser"] as string;
+        if (currentUserHeader) {
+          const currentUser = JSON.parse(currentUserHeader);
+          tagToCreate.createdBy = currentUser.userId;
+        }
+      } catch (error) {
+        console.log('Error parsing currentUser for tag creation:', error);
+      }
+    }
+
+    const tag = new Tags(tagToCreate);
     return await tag.save();
   }
 
-  // Get all tags with optional filters
-  async getAllTags(filters?: TagsFilterOptions): Promise<ITags[]> {
+  // Get all tags with optional filters and access-based filtering
+  async getAllTags(filters?: TagsFilterOptions, req?: Request): Promise<ITags[]> {
     const query: any = {};
+    
+    // Apply access-based filter first
+    if (req) {
+      const accessFilter = getAccessFilter(req, 'tag');
+      Object.assign(query, accessFilter);
+    }
     
     // Build the query based on filters
     if (filters) {

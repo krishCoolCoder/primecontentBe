@@ -1,6 +1,8 @@
 import ContentType, { IContentType, IContentTypeField } from './contentType.model';
 import Tags from '../tags/tags.model';
 import Contents from '../contents/contents.model';
+import { getAccessFilter } from '../../utils/accessFilter';
+import { Request } from 'express';
 
 export interface CreateContentTypeData {
   tags?: string;
@@ -45,8 +47,14 @@ export class ContentTypeService {
   }
 
   // Get all content types with optional filters
-  async getAllContentTypes(filters?: ContentTypeFilterOptions): Promise<IContentType[]> {
+  async getAllContentTypes(filters?: ContentTypeFilterOptions, req?: Request): Promise<IContentType[]> {
     const query: any = {};
+    
+    // Apply access-based filter first
+    if (req) {
+      const accessFilter = getAccessFilter(req, 'contentType');
+      Object.assign(query, accessFilter);
+    }
     
     // Build the query based on filters
     if (filters) {
@@ -128,23 +136,47 @@ export class ContentTypeService {
   }
 
   // Get content types by tag
-  async getContentTypesByTag(tagName: string): Promise<IContentType[]> {
-    return await ContentType.find({ tags: tagName })
+  async getContentTypesByTag(tagName: string, req?: Request): Promise<IContentType[]> {
+    const query: any = { tags: tagName };
+    
+    // Apply access-based filter first
+    if (req) {
+      const accessFilter = getAccessFilter(req, 'contentType');
+      Object.assign(query, accessFilter);
+    }
+    
+    return await ContentType.find(query)
       .populate('createdBy', 'firstName lastName email')
       .populate('updatedBy', 'firstName lastName email')
       .sort({ createdAt: -1 });
   }
 
   // Get contents by content type name
-  async getContentsByContentTypeName(contentTypeName: string): Promise<any[]> {
+  async getContentsByContentTypeName(contentTypeName: string, req?: Request): Promise<any[]> {
     // First find the content type by name
-    const contentType = await ContentType.findOne({ contentTypeName });
+    const contentTypeQuery: any = { contentTypeName };
+    
+    // Apply access-based filter for content type lookup
+    if (req) {
+      const accessFilter = getAccessFilter(req, 'contentType');
+      Object.assign(contentTypeQuery, accessFilter);
+    }
+    
+    const contentType = await ContentType.findOne(contentTypeQuery);
     if (!contentType) {
       throw new Error('Content type not found');
     }
 
-    // Then find all contents for this content type
-    return await Contents.find({ contentTypeId: contentType._id })
+    // Then find all contents for this content type with access filter
+    const contentsQuery: any = { contentTypeId: contentType._id };
+    
+    // Apply access-based filter for contents
+    if (req) {
+      const accessFilter = getAccessFilter(req, 'content');
+      Object.assign(contentsQuery, accessFilter);
+    }
+
+    return await Contents.find(contentsQuery)
       .populate('contentTypeId', 'contentTypeName tags')
       .sort({ createdAt: -1 });
   }

@@ -5,6 +5,7 @@ import { authorization } from '../../middleware/authorization';
 const router = Router();
 
 // All routes require authorization
+router.post('/', authorization, userAccessController.createUserAccess);
 router.get('/', authorization, userAccessController.getAllUserAccess);
 router.get('/count', authorization, userAccessController.getUserAccessCount);
 router.get('/role/:roleId', authorization, userAccessController.getUserAccessByRoleId);
