@@ -212,7 +212,7 @@ export class UserAccessService {
     
     // Apply access-based filter first
     if (req) {
-      const accessFilter = getAccessFilter(req, 'user');
+      const accessFilter = getAccessFilter(req, 'userAccess');
       Object.assign(query, accessFilter);
     }
     
