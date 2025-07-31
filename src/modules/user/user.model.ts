@@ -44,11 +44,9 @@ const userSchema = new Schema<IUser>({
     required: [true, 'Password is required'],
     minlength: [6, 'Password must be at least 6 characters long']
   },
-  // role: {
-  //   type: String,
-  //   enum: ['superAdmin', 'admin', 'user', 'anonymous'],
-  //   default: 'anonymous'
-  // },
+  role: {
+    type: String,
+  },
   userRoleId: {
     type: Schema.Types.ObjectId,
     ref: 'UserRoles',
